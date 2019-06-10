@@ -1,0 +1,19 @@
+# ignore Pycharm files
+.idea/
+
+# ignore virtualenv files
+venv/
+
+# ignore info folder 
+info/
+
+# do not upload data, but keep folder
+data/*
+!data/.gitkeep
+
+# Python specific
+**/__pycache__/
+src/.ipynb_checkpoints
+
+# Ignore Mac DS_Store files
+.DS_Store
