@@ -163,3 +163,5 @@ if __name__ == '__main__':
     # data = load_images(data_dir)
 
     test_dataset(meta_path, data_dir)
+
+smdnf 
