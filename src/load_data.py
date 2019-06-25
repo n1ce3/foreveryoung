@@ -9,7 +9,7 @@ import os
 
 # used for exploration and understanding of the structure of the meta data
 def explore_meta(meta_path, print_info=True):
-
+    # read the file into numpy
     meta = sio.loadmat(meta_path)
 
     if print_info:
@@ -54,37 +54,22 @@ def explore_meta(meta_path, print_info=True):
     print(name[5][0][0])
 
 
-# probably not needed
-def load_data(relative_path):
-    filelist = glob.glob(relative_path+'/*.jpg')
-    data = np.empty(len(filelist))
-
-    # iterate files and append to numpy array
-    print(len(filelist))
-    for i, filename in enumerate(filelist):
-        im = Image.open(filename)
-        data[i] = np.array(im)
-    return data
-
-
 # returns the name of a celebrity given the corresponding id
 def return_name(idx):
     meta = sio.loadmat(meta_path)
     key1 = 'celebrityData'
     cData = meta[key1][0, 0]
-    print(cData[0][idx][0][0])
     return cData[0][idx][0][0]
 
 
 # used to test the basic function of the dataset
 def test_dataset(meta_path, data_dir):
-    face_dataset = FaceDataset(meta_path=meta_path,
-                                        data_dir=data_dir)
+    face_dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir)
 
     fig = plt.figure()
 
     for i in range(len(face_dataset)):
-        sample = face_dataset[i]
+        sample = face_dataset[i+100]
 
         print(sample['name'], sample['image'].shape, sample['age'])
 
@@ -97,6 +82,7 @@ def test_dataset(meta_path, data_dir):
         if i == 3:
             plt.show()
             break
+
 
 class FaceDataset(Dataset):
     """Face dataset."""
@@ -163,6 +149,8 @@ class FaceDataset(Dataset):
             sample = self.transform(sample)
 
         return sample
+
+
 
 
 if __name__ == '__main__':
