@@ -1,4 +1,5 @@
 # Things to remember
 
 AVE:
-- Batchnorm
+- Batchnorm 
+- maxpool or stride
