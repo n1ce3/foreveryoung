@@ -3,3 +3,4 @@
 AVE:
 - Batchnorm 
 - maxpool or stride
+- LeakyReLU
