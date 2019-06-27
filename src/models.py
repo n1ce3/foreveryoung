@@ -50,7 +50,7 @@ class VAE(nn.Module):
         # draw samples p(z)~N(0,1)
         z = torch.randn((n, self.latent_dim))
         # generate
-        x_sampled = self.decoder(z, c)
+        x_sampled = self.decoder(z)
 
         return x_sampled
 
@@ -99,7 +99,7 @@ class Decoder(nn.Module):
         """
         Arguments:
             kernel_sizes (list[int]): first entry is output size of fully connected layer
-                                      all others are shape of upsampling convolutional layers,
+                                      all others are shape of upsampling convolutional kernels,
             latent_dim (int): dimension of latent space, i.e. dimension out input of the decoder,
         """
         super(Decoder, self).__init__()
