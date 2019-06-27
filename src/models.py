@@ -38,36 +38,46 @@ class VAE(nn.Module):
         z = means + eps*std
         recon_x = self.decoder(z)
 
-        return recon_x, means, log_vars 
+        return recon_x, means, log_vars
 
-    def sampling():
-        pass
+    def sampling(self, n=2):
+        """
+        Arguments:
+            n (int): amount of samples (amount of elements in the latent space)
+        Output:
+            x_sampled: n randomly sampled elements of the output distribution
+        """
+        # draw samples p(z)~N(0,1)
+        z = torch.randn((n, self.latent_dim))
+        # generate
+        x_sampled = self.decoder(z, c)
+
+        return x_sampled
+
 
 class Encoder(nn.Module):
 
     def __init__(self, kernel_sizes, latent_dim):
         """
         Arguments:
-            kernel_sizes (list[tupel(int)]): list containing tupels of sizes of the convolutional encoder kernels,
+            kernel_sizes (list[tupel(int)]): list containing tupels of sizes of the convolutional encoder kernels
+                                             last element is size of fully connected layer
             latent_dim (int): latent space dimension
         """
         super(Encoder, self).__init__()
 
         self.latent_dim = latent_dim
 
-        # initialize layers
+        # initialize convolutional layers
         layer_list = []
-        for shape in kernel_sizes:
+        for shape in kernel_sizes[:-1]:
             layer_list.append(nn.Conv2d(*shape))
         # store layers
         self.layers = nn.Sequential(*layer_list)
 
         # layers for latent space output
-        last_conv = layer_sizes[-1]
-        # ----> shape of linear layer is probably not true
-        self.out_mean = nn.Linear(last_conv[0]*last_conv[0]*last_conv[1], latent_dim)
-        self.out_var = nn.Linear(last_conv[0]*last_conv[0]*last_conv[1], latent_dim)
-
+        self.out_mean = nn.Linear(kernel_sizes[-1], latent_dim)
+        self.out_var = nn.Linear(kernel_sizes[-1], latent_dim)
 
     def forward(self, x):
         # forward 
@@ -82,17 +92,32 @@ class Encoder(nn.Module):
 
         return means, log_vars
 
+
 class Decoder(nn.Module):
 
-    def __init__(self, layer_sizes, latent_dim):
+    def __init__(self, kernel_sizes, latent_dim):
         """
+        Arguments:
+            kernel_sizes (list[int]): first entry is output size of fully connected layer
+                                      all others are shape of upsampling convolutional layers,
+            latent_dim (int): dimension of latent space, i.e. dimension out input of the decoder,
         """
         super(Decoder, self).__init__()
 
         self.latent_dim = latent_dim
 
+        # initialize fully connected layers
+        layer_list.append(nn.Linear(latent_dim, kernel_sizes[0]))
 
-    def forward():
-        pass
+        # initialize convolutional layers
+        layer_list = []
+        for shape in kernel_sizes[1:]:
+            layer_list.append(nn.ConvTranspose2d(*shape))
+
+        # store layers
+        self.layers = nn.Sequential(*layer_list)
+
+    def forward(self, z):
+        return self.layers(z)
 
     
