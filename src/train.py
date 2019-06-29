@@ -18,7 +18,6 @@ from models import VAE
 from utils import vae_loss
 
 
-
 # Training of the VAE
 def train(model, epochs, optimizer, loss_fct):
 
@@ -98,13 +97,13 @@ if __name__ == '__main__':
     # hyperparameters
     batch = 8
     epochs = 10
-    encoder_layer_sizes = [32*32, 512, 256]
-    decoder_layer_sizes = [256, 512, 32*32]
-    latent_dim_baseline = 2
+    latent_dim = 2
+    encoder_params = [(1, 32, 4, 2), (32, 64, 4, 2), (64, 128, 4, 2), (128, 256, 4, 2), 256*4*4]
+    decoder_params = []
     lr = 1e-4
 
     # set up Model
-    model = VAE(latent_dim, encoder_layer_sizes, decoder_layer_sizes)
+    model = VAE(latent_dim, encoder_params, decoder_paras)
     model = model.to(device)
     optimizer= optim.Adam(model.parameters(), lr=lr)
 

@@ -72,6 +72,9 @@ class Encoder(nn.Module):
         layer_list = []
         for shape in kernel_sizes[:-1]:
             layer_list.append(nn.Conv2d(*shape))
+            # batchnorm requires number of features
+            layer_list.append(nn.BatchNorm2d(shape[1])
+            layer_list.append(nn.ReLU())
         # store layers
         self.layers = nn.Sequential(*layer_list)
 
