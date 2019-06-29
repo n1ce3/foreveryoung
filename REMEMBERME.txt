@@ -4,3 +4,9 @@ AVE:
 - Batchnorm 
 - maxpool or stride
 - LeakyReLU
+
+# ToDo:
+
+Overleaf: 
+- increase spacing around equations
+- increse spacing to the left and right similar to abstract
