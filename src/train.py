@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms, models
 from torch.autograd import Variable
@@ -12,22 +11,30 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
-from fcts.load_data import load_data
-
 from tqdm import tqdm_notebook as tqdm
+
+from load_data import FaceDataset
+from models import VAE
+from utils import vae_loss
 
 
 
 # Training of the VAE
-def train(model, epochs, path, optimizer, loss_fct):
+def train(model, epochs, optimizer, loss_fct):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/CACD2000'
 
+    # not sure if we need normalize, therefore not used in trafo
+    PIL = transforms.ToPILImage()
+    normalize = transforms.Normalize(mean=0, std=1)
+    grey = transforms.Grayscale(num_output_channels=1)
+    crop = transforms.CenterCrop(size=64)
+    to_tensor = transforms.ToTensor()
+
     # define transformations
-    trafo = transforms.Compose([
-                        transforms.ToTensor()])
+    trafo = transforms.Compose([PIL, grey, crop, to_tensor])
 
     # datasets
     train_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
@@ -39,15 +46,15 @@ def train(model, epochs, path, optimizer, loss_fct):
 
     # check for previous trained models and resume from there if available
     try:
-        previous = max(glob.glob(path + '/*.pth'))
-        print('load previous model')
+        previous = max(glob.glob('../models/*.pth'))
+        print('Load previous model')
         checkpoint = torch.load(previous)
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         loss = checkpoint['loss']
         epochs_trained = checkpoint['epoch']
     except Exception as e:
-        print('no model to load')
+        print('No model to load')
         epochs_trained = 0
 
     model.train()
@@ -62,7 +69,6 @@ def train(model, epochs, path, optimizer, loss_fct):
 
             recon_batch,  mu, log_var = model(x)
             loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct)
-            #loss = loss_function(recon_batch,  x, mu, log_var)
 
             loss.backward()
             train_loss += loss.item()
@@ -83,25 +89,23 @@ if __name__ == '__main__':
     # needed for macOS in some cases
     os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-    # batch size
-    batch = 128
     # allow for cuda
     if torch.cuda.is_available():
         device = 'cuda'
     else:
         device = 'cpu'
 
-        # hyperparameters
+    # hyperparameters
+    batch = 8
+    epochs = 10
     encoder_layer_sizes = [32*32, 512, 256]
     decoder_layer_sizes = [256, 512, 32*32]
-
     latent_dim_baseline = 2
-    vae_baseline = VAE_baseline(inp_dim=(32*32), encoder_layer_sizes=encoder_layer_sizes, decoder_layer_sizes=decoder_layer_sizes, latent_dim=latent_dim_baseline)
-    vae_baseline = vae_baseline.to(device)
-    optimizer_baseline = optim.Adam(vae_baseline.parameters(), lr=1e-3)
+    lr = 1e-4
 
-    loss_func_baseline = nn.MSELoss()
+    # set up Model
+    model = VAE(latent_dim, encoder_layer_sizes, decoder_layer_sizes)
+    model = model.to(device)
+    optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    epochs_baseline = 15
-
-    train(vae_baseline, epochs_baseline, './models/clustering/baseline', optimizer_baseline, loss_func_baseline)
+    train(model, epochs, optimizer, nn.MSELoss())

@@ -151,8 +151,6 @@ class FaceDataset(Dataset):
         return sample
 
 
-
-
 if __name__ == '__main__':
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'

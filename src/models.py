@@ -23,7 +23,7 @@ class VAE(nn.Module):
 
     def forward(self, x):
         """
-        Forward Process of whole VAE. 
+        Forward Process of whole VAE.
         Arguments:
             x: tensor of dimension (batch_size, 1, input_shape, input_shape)
         Output: recon_x, means, log_var
@@ -31,7 +31,7 @@ class VAE(nn.Module):
             means: output of encoder,
             log_var: output of encoder
         """
-        
+
         means, log_vars = self.encoder(x)
         std = torch.exp(.5*log_vars)
         eps = torch.randn_like(std)
@@ -80,7 +80,7 @@ class Encoder(nn.Module):
         self.out_var = nn.Linear(kernel_sizes[-1], latent_dim)
 
     def forward(self, x):
-        # forward 
+        # forward
         out = self.layers(x)
 
         # reshape
@@ -119,5 +119,3 @@ class Decoder(nn.Module):
 
     def forward(self, z):
         return self.layers(z)
-
-    
