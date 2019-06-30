@@ -59,7 +59,10 @@ def return_name(idx, meta_path):
     meta = sio.loadmat(meta_path)
     key1 = 'celebrityData'
     cData = meta[key1][0, 0]
-    return cData[0][idx][0][0][0]
+    # idx must be lowered by one because they are not 0 based
+    if idx > 2000:
+        raise ValueError('Idx must not exceed 2000')
+    return cData[0][idx-1][0][0][0]
 
 
 # used to test the basic function of the dataset
