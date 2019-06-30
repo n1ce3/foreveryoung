@@ -101,9 +101,10 @@ if __name__ == '__main__':
     batch = 8
     epochs = 10
     latent_dim = 10
-    encoder_params = [(1, 32, 4, 2), (32, 64, 4, 2), (64, 128, 4, 2), (128, 256, 4, 2), 256*4*4]
+    # here zero padding is needed
+    encoder_params = [(1, 32, 4, 2, 1), (32, 64, 4, 2, 1), (64, 128, 4, 2, 1), (128, 256, 4, 2, 1), 256*4*4]
     # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
-    decoder_params = [256*4*4, (256, 128, 3, 1, 1), (128, 64, 3, 1, 1), (64, 32, 3, 1, 1), (32, 1, 3, 1)]
+    decoder_params = [256*4*4, (256, 128, 3, 1, 1), (128, 64, 3, 1, 1), (64, 32, 3, 1, 1), (32, 1, 3, 1, 1)]
     lr = 1e-4
 
     # set up Model
