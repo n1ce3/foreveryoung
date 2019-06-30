@@ -73,7 +73,7 @@ class Encoder(nn.Module):
         for shape in kernel_sizes[:-1]:
             layer_list.append(nn.Conv2d(*shape))
             # batchnorm requires number of features
-            layer_list.append(nn.BatchNorm2d(shape[1])
+            layer_list.append(nn.BatchNorm2d(shape[1]))
             layer_list.append(nn.ReLU())
         # store layers
         self.layers = nn.Sequential(*layer_list)
@@ -109,16 +109,25 @@ class Decoder(nn.Module):
 
         self.latent_dim = latent_dim
 
-        # initialize fully connected layers
-        layer_list.append(nn.Linear(latent_dim, kernel_sizes[0]))
-
         # initialize convolutional layers
         layer_list = []
+
+        # initialize fully connected layers
+        self.linear = nn.Linear(latent_dim, kernel_sizes[0])
+
         for shape in kernel_sizes[1:]:
-            layer_list.append(nn.ConvTranspose2d(*shape))
+            layer_list.append(nn.ReLU())
+            layer_list.append(nn.Upsample(scale_factor=2))
+            layer_list.append(nn.Conv2d(*shape))
+
 
         # store layers
         self.layers = nn.Sequential(*layer_list)
 
     def forward(self, z):
-        return self.layers(z)
+        out = self.linear(z)
+
+        # reshape
+        out = out.view(out.size()[0], -1, 4, 4)
+
+        return self.layers(out)

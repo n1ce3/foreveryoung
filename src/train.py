@@ -11,7 +11,7 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 from load_data import FaceDataset
 from models import VAE
@@ -19,7 +19,7 @@ from utils import vae_loss
 
 
 # Training of the VAE
-def train(model, epochs, optimizer, loss_fct):
+def train(model, epochs, batch, optimizer, loss_fct):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -40,8 +40,8 @@ def train(model, epochs, optimizer, loss_fct):
     test_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
 
     # dataloader
-    train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_set, batch_size=batch_size, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(dataset=test_set, batch_size=batch, shuffle=False)
 
     # check for previous trained models and resume from there if available
     try:
@@ -97,14 +97,15 @@ if __name__ == '__main__':
     # hyperparameters
     batch = 8
     epochs = 10
-    latent_dim = 2
+    latent_dim = 10
     encoder_params = [(1, 32, 4, 2), (32, 64, 4, 2), (64, 128, 4, 2), (128, 256, 4, 2), 256*4*4]
-    decoder_params = []
+    # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
+    decoder_params = [256*4*4, (256, 128, 3, 1, 1), (128, 64, 3, 1, 1), (64, 32, 3, 1, 1), (32, 1, 3, 1)]
     lr = 1e-4
 
     # set up Model
-    model = VAE(latent_dim, encoder_params, decoder_paras)
+    model = VAE(latent_dim, encoder_params, decoder_params)
     model = model.to(device)
     optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    train(model, epochs, optimizer, nn.MSELoss())
+    train(model, epochs, batch, optimizer, nn.MSELoss())

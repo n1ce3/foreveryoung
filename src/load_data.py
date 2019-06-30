@@ -55,7 +55,7 @@ def explore_meta(meta_path, print_info=True):
 
 
 # returns the name of a celebrity given the corresponding id
-def return_name(idx):
+def return_name(idx, meta_path):
     meta = sio.loadmat(meta_path)
     key1 = 'celebrityData'
     cData = meta[key1][0, 0]
@@ -132,6 +132,7 @@ class FaceDataset(Dataset):
         self.file_name = self.load_meta(meta_path)['file_name']
         self.transform = transform
         self.data_dir = data_dir
+        self.meta_path = meta_path
 
     def __len__(self):
         return len(self.file_name)
@@ -141,7 +142,7 @@ class FaceDataset(Dataset):
                                 self.file_name[idx][0][0])
 
         age = self.age[idx][0]
-        name = return_name(self.celeb_id[idx])
+        name = return_name(self.celeb_id[idx], self.meta_path)
         im = np.array(Image.open(filename))
         sample = {'image': im, 'age': age, 'name': name}
 
