@@ -84,14 +84,17 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         # forward
+        print(x.shape)
         out = self.layers(x)
-
+        print(out.shape)
         # reshape
         out = out.view(out.size()[0], -1)
-
+        print(out.shape)
         # latent space output
         means = self.out_mean(out)
+        print(means.shape)
         log_vars = self.out_var(out)
+        print(log_vars.shape)
 
         return means, log_vars
 

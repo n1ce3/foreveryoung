@@ -59,7 +59,7 @@ def return_name(idx, meta_path):
     meta = sio.loadmat(meta_path)
     key1 = 'celebrityData'
     cData = meta[key1][0, 0]
-    return cData[0][idx][0][0]
+    return cData[0][idx][0][0][0]
 
 
 # used to test the basic function of the dataset
@@ -144,11 +144,11 @@ class FaceDataset(Dataset):
         age = self.age[idx][0]
         name = return_name(self.celeb_id[idx], self.meta_path)
         im = np.array(Image.open(filename))
-        sample = {'image': im, 'age': age, 'name': name}
 
         if self.transform:
-            sample = self.transform(sample)
+            im = self.transform(im)
 
+        sample = {'image': im, 'age': age, 'name': name}
         return sample
 
 

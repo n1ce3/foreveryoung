@@ -61,8 +61,11 @@ def train(model, epochs, batch, optimizer, loss_fct):
     for epoch in np.arange(epochs_trained, epochs):
 
         train_loss = 0
-        for batch_idx, data in enumerate(tqdm(train_loader, desc=f'Train Epoch {epoch}', leave=False)):
-            x = data
+
+        # for batch_idx, data in enumerate(tqdm(train_loader, desc=f'Train Epoch {epoch}', leave=False)):
+        for batch_idx, data in enumerate(train_loader):
+            # we only need the image for the moment
+            x = data['image']
             x = x.to(device)
             optimizer.zero_grad()
 
