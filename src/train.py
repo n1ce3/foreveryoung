@@ -1,25 +1,25 @@
+import glob
+import os.path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from tqdm import tqdm
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data.dataset import Dataset
-from torchvision import transforms, models
-from torch.autograd import Variable
-
-import os.path
-import glob
-import numpy as np
-import matplotlib.pyplot as plt
-
-from tqdm import tqdm
-
 from load_data import FaceDataset
 from models import VAE
+from torch.autograd import Variable
+from torch.utils.data import SubsetRandomSampler
+from torch.utils.data.dataset import Dataset
+from torchvision import models, transforms
 from utils import vae_loss
 
 
 # Training of the VAE
-def train(model, epochs, batch, optimizer, loss_fct):
+def train(model, epochs, batch, optimizer, loss_fct, path, subset=None):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -39,8 +39,16 @@ def train(model, epochs, batch, optimizer, loss_fct):
     train_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
     test_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
 
-    # dataloader
-    train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, shuffle=True)
+    # if subset
+    if subset is not None:
+        # mask
+        mask = np.arange(subset)
+        # dataloader subset
+        train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, sampler=SubsetRandomSampler(np.where(mask)[0]), shuffle=False)
+    else:
+        train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, shuffle=True)
+
+    # testset
     test_loader = torch.utils.data.DataLoader(dataset=test_set, batch_size=batch, shuffle=False)
 
     # check for previous trained models and resume from there if available
@@ -97,9 +105,9 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # hyperparameters
-    batch = 8
-    epochs = 10
-    latent_dim = 10
+    batch = 100
+    epochs = 1
+    latent_dim = 50
     # here zero padding is needed
     encoder_params = [(1, 32, 4, 2, 1), (32, 64, 4, 2, 1), (64, 128, 4, 2, 1), (128, 256, 4, 2, 1), 256*4*4]
     # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
@@ -111,4 +119,4 @@ if __name__ == '__main__':
     model = model.to(device)
     optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    train(model, epochs, batch, optimizer, nn.MSELoss())
+    train(model, epochs, batch, optimizer, nn.MSELoss(), './', subset=1000)
