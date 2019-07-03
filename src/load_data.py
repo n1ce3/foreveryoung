@@ -3,6 +3,7 @@ import scipy.io as sio
 from PIL import Image
 import glob
 import pandas as pd
+from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import os
@@ -111,7 +112,7 @@ class FaceDataset(Dataset):
         return {'age': age, 'celeb_id': celeb_id, 'year': year, 'file_name':file_name}
 
     def load_data(self, data_dir):
-        filelist = glob.glob(relative_path+'/*.jpg')
+        filelist = glob.glob(data_dir+'/*.jpg')
         data = np.empty(len(filelist))
 
         # iterate files and append to numpy array
@@ -154,14 +155,49 @@ class FaceDataset(Dataset):
         sample = {'image': im, 'age': age, 'name': name}
         return sample
 
+# function to resize images in data set
+def resize_images(data_dir, target_dir, size=(32, 32)):
+    """
+    Args:
+        data_dir (string): Directory with all the original images.
+        target_dir (string): Directory the new images, will be created if not existant.
+        size (tupel): Size of the output image.
+    """
+    filelist = glob.glob(data_dir+'/*.jpg')
+    print('Filenames loaded...')
+
+    # create new folder if not existant 
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+        print('New Folder created!')
+    else:
+        print('Folder exists!')
+
+    for i, filename in enumerate(tqdm(filelist, desc='Resize Images')):
+        # get file
+        im = Image.open(filename)
+        # resize
+        im.thumbnail(size, Image.ANTIALIAS)
+        
+        # outfile 
+        outfile = os.path.basename(filename)
+        # save image
+        im.save(target_dir+'/'+outfile)
+
+
 
 if __name__ == '__main__':
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/CACD2000'
+    target_dir_32 = '../data/32x32CACD2000'
+    target_dir_64 = '../data/64x64CACD2000'
 
     # explore_meta(meta_path)
 
     # data = load_images(data_dir)
 
-    test_dataset(meta_path, data_dir)
+    # test_dataset(meta_path, data_dir)
+
+    resize_images(data_dir, target_dir_64, size=(64,64))
+
