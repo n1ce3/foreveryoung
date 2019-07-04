@@ -8,6 +8,8 @@ AVE:
 
 # ToDo:
 - Save models in a proper way
+- Visualize examples
+- Sample examples
 
 Overleaf: 
 - increase spacing around equations
