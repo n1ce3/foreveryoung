@@ -8,6 +8,7 @@ AVE:
 
 # ToDo:
 - Save models in a proper way
+- Test model after each epoch on test set 
 - Visualize examples
 - Sample examples
 
