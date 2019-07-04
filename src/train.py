@@ -15,42 +15,34 @@ from torch.autograd import Variable
 from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
-from utils import vae_loss
-
+from utils import vae_loss, set_split
 
 # Training of the VAE
-def train(model, epochs, batch, optimizer, loss_fct, path, subset=None):
+def train(model, epochs, batch, optimizer, loss_fct, path, subset=None, test_split=0.2):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
-    data_dir = '../data/CACD2000'
+    data_dir = '../data/64x64CACD2000'
 
     # not sure if we need normalize, therefore not used in trafo
     PIL = transforms.ToPILImage()
     normalize = transforms.Normalize(mean=0, std=1)
     grey = transforms.Grayscale(num_output_channels=1)
-    crop = transforms.CenterCrop(size=64)
+    #crop = transforms.CenterCrop(size=64)
     to_tensor = transforms.ToTensor()
 
     # define transformations
-    trafo = transforms.Compose([PIL, grey, crop, to_tensor])
+    trafo = transforms.Compose([PIL, grey, to_tensor])
 
     # datasets
-    train_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
-    test_set = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
+    dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
 
-    # if subset
-    if subset is not None:
-        # mask
-        mask = np.arange(subset)
-        # dataloader subset
-        train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, sampler=SubsetRandomSampler(np.where(mask)[0]), shuffle=False)
-    else:
-        train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=batch, shuffle=True)
+    train_sampler, test_sampler = set_split(dataset, subset=subset, test_split=test_split)
 
-    # testset
-    test_loader = torch.utils.data.DataLoader(dataset=test_set, batch_size=batch, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=train_sampler)
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=test_sampler)
 
+    
     # check for previous trained models and resume from there if available
     try:
         previous = max(glob.glob('../models/*.pth'))
@@ -105,7 +97,7 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # hyperparameters
-    batch = 100
+    batch = 10
     epochs = 1
     latent_dim = 50
     # here zero padding is needed
@@ -119,4 +111,4 @@ if __name__ == '__main__':
     model = model.to(device)
     optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    train(model, epochs, batch, optimizer, nn.MSELoss(), './', subset=1000)
+    train(model, epochs, batch, optimizer, nn.MSELoss(), './', subset_size=10000, test_split=0.2)
