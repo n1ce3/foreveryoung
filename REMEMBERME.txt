@@ -4,8 +4,10 @@ AVE:
 - Batchnorm 
 - maxpool or stride
 - LeakyReLU
+- Upsample or convtranspose2d
 
 # ToDo:
+- Save models in a proper way
 
 Overleaf: 
 - increase spacing around equations
