@@ -126,4 +126,6 @@ class Decoder(nn.Module):
         out = self.linear(z)
         # reshape
         out = out.view(out.size()[0], -1, 4, 4)
-        return self.layers(out)
+        #out = nn.Tanh()(self.layers(out))
+        out = self.layers(out)
+        return out
