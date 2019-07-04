@@ -28,7 +28,10 @@ def set_split(data_set, subset=None, test_split=0.2, SEED = 42):
     np.random.shuffle(indices)
     np.random.seed(SEED)
 
-    train_indices, test_indices = indices[split:], indices[:split]
+    if subset is None:
+        train_indices, test_indices = indices[split:], indices[:split]
+    else:
+        train_indices, test_indices = indices[split:subset], indices[:split]
 
     train_sampler = SubsetRandomSampler(train_indices)
     test_sampler = SubsetRandomSampler(test_indices)
