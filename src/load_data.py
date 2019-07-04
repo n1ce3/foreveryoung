@@ -92,7 +92,7 @@ class FaceDataset(Dataset):
     """Face dataset."""
 
     def load_meta(self, meta_path):
-        # load meta data into numpy array
+        # load meta data
         meta = sio.loadmat(meta_path)
 
         # Keys which store data
@@ -109,45 +109,54 @@ class FaceDataset(Dataset):
         year = cImageData[2]
         file_name = cImageData[7]
 
-        return {'age': age, 'celeb_id': celeb_id, 'year': year, 'file_name':file_name}
+        return {'age': age, 'celeb_id': celeb_id, 'year': year, 'file_name': file_name}
 
     def load_data(self, data_dir):
         filelist = glob.glob(data_dir+'/*.jpg')
-        data = np.empty(len(filelist))
+        data = []
 
         # iterate files and append to numpy array
         print(len(filelist))
-        for i, filename in enumerate(filelist):
+        for i, filename in enumerate(tqdm(filelist, desc='Load Data')):
             im = Image.open(filename)
-            data[i] = np.array(im)
-        return data
+            data.append(np.array(im))
+        return np.array(data)
+    
+    def get_name(self, idx, meta):
+        key1 = 'celebrityData'
+        cData = meta[key1][0, 0]
+        # idx must be lowered by one because they are not 0 based
+        if idx > 2000:
+            raise ValueError('Idx must not exceed 2000')
+        return cData[0][idx-1][0][0][0]
 
     def __init__(self, meta_path, data_dir, transform=None):
         """
-        Args:
+        Args:s
             meta_path (string): Path to the .mat file with labels.
             data_dir (string): Directory with all the images.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.age = self.load_meta(meta_path)['age']
-        self.celeb_id = self.load_meta(meta_path)['celeb_id']
-        self.year = self.load_meta(meta_path)['year']
-        self.file_name = self.load_meta(meta_path)['file_name']
+        #self.age = self.load_meta(meta_path)['age']
+        #self.celeb_id = self.load_meta(meta_path)['celeb_id']
+        #self.year = self.load_meta(meta_path)['year']
+        #self.file_name = self.load_meta(meta_path)['file_name']
         self.transform = transform
         self.data_dir = data_dir
         self.meta_path = meta_path
+        self.meta = sio.loadmat(meta_path)
+        self.data = self.load_data(data_dir)
+        self.meta_data = self.load_meta(meta_path)
+        
 
     def __len__(self):
-        return len(self.file_name)
+        return len(self.meta_data['file_name'])
 
     def __getitem__(self, idx):
-        filename = os.path.join(self.data_dir,
-                                self.file_name[idx][0][0])
-
-        age = self.age[idx][0]
-        name = return_name(self.celeb_id[idx], self.meta_path)
-        im = np.array(Image.open(filename))
+        age = self.meta_data['age'][idx][0]
+        name = self.get_name(self.meta_data['celeb_id'][idx], self.meta)
+        im = self.data[idx]
 
         if self.transform:
             im = self.transform(im)
@@ -185,7 +194,6 @@ def resize_images(data_dir, target_dir, size=(32, 32)):
         im.save(target_dir+'/'+outfile)
 
 
-
 if __name__ == '__main__':
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -199,5 +207,5 @@ if __name__ == '__main__':
 
     # test_dataset(meta_path, data_dir)
 
-    resize_images(data_dir, target_dir_64, size=(64,64))
+    # resize_images(data_dir, target_dir_64, size=(64,64))
 
