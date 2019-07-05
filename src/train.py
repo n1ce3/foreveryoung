@@ -16,6 +16,7 @@ from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
 from utils import vae_loss, set_split
+import pandas as pd
 
 # Training of the VAE
 def train(model, epochs, batch, optimizer, loss_fct, path, subset_size=None, test_split=0.2):
@@ -26,23 +27,25 @@ def train(model, epochs, batch, optimizer, loss_fct, path, subset_size=None, tes
 
     # not sure if we need normalize, therefore not used in trafo
     PIL = transforms.ToPILImage()
-    normalize = transforms.Normalize(mean=0, std=1)
+    normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
     #grey = transforms.Grayscale(num_output_channels=1)
     #crop = transforms.CenterCrop(size=32)
     to_tensor = transforms.ToTensor()
 
     # define transformations
-    trafo = transforms.Compose([PIL, to_tensor])
+    trafo = transforms.Compose([PIL, to_tensor, normalize])
 
     # data sets
     dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
 
-    train_sampler, test_sampler = set_split(dataset, subset=subset_size, test_split=test_split)
+    train_indices, test_indices = set_split(len(dataset), subset=subset_size, test_split=test_split)
+    train_sampler = SubsetRandomSampler(train_indices)
+    test_sampler = SubsetRandomSampler(test_indices)
 
     train_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=train_sampler)
     test_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=test_sampler)
 
-    
+
     # check for previous trained models and resume from there if available
     try:
         previous = max(glob.glob('../models/*.pth'))
@@ -75,7 +78,7 @@ def train(model, epochs, batch, optimizer, loss_fct, path, subset_size=None, tes
             train_loss += loss.item()
             optimizer.step()
 
-        print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(train_loader.dataset)))
+        print('====> Epoch: {} Average loss: {:.7f}'.format(epoch, train_loss / len(train_loader.dataset)))
 
         # save model
         torch.save({
@@ -84,6 +87,85 @@ def train(model, epochs, batch, optimizer, loss_fct, path, subset_size=None, tes
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
                 }, path+('/vae-{}.pth').format(epoch))
+
+
+def hyper_search(epochs, latent_dim, encoder_params, decoder_params, lr, loss_file_name, batch=132, subset_size=1000, test_split=0.0):
+
+    # build dataframe
+    df = pd.DataFrame.from_dict({})
+
+    # prepare data
+    # set paths to data
+    meta_path = '../data/celebrity2000_meta.mat'
+    data_dir = '../data/64x64CACD2000'
+
+    # prepare transformation
+    PIL = transforms.ToPILImage()
+    normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    to_tensor = transforms.ToTensor()
+
+    # define transformations
+    trafo = transforms.Compose([PIL, to_tensor, normalize])
+
+    # data sets
+    dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo, subset=subset_size)
+
+    # get data subset
+    train_indices, test_indicies = set_split(len(dataset), subset=subset_size, test_split=test_split)
+    train_sampler = SubsetRandomSampler(train_indices)
+    test_sampler = SubsetRandomSampler(test_indicies)
+
+    train_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=train_sampler)
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=test_sampler)
+
+    for lr in tqdm(lr, desc='Hyperparameter search', leave=False):
+
+        print('Learning rate: ', lr)
+
+        # save loss
+        temp_loss = np.zeros(epochs)
+
+        # initialize model
+        model = VAE(latent_dim, encoder_params, decoder_params)
+        model = model.to(device)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+        loss_fct = nn.MSELoss()
+
+        model.train()
+
+        # train model
+        for epoch in range(epochs):
+
+            train_loss = 0
+
+            for batch_idx, data in enumerate(tqdm(train_loader, desc=f'Train Epoch {epoch}', leave=False)):
+                # we only need the image for the moment
+                x = data['image']
+                x = x.to(device)
+                optimizer.zero_grad()
+
+                recon_batch,  mu, log_var = model(x)
+                loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct)
+
+                loss.backward()
+                train_loss += loss.item()
+                optimizer.step()
+            
+            # save loss
+            temp_loss[epoch] = train_loss / len(train_loader.dataset)
+
+            print('====> Epoch: {} Average loss: {:.7f}'.format(epoch, train_loss / len(train_loader.dataset)))
+        
+        # add to df
+        df[str(lr)] = temp_loss
+        # create or open loss file
+        #loss_file = open(loss_file_name, 'w+')
+        # save temp_loss to file
+        df.to_csv(loss_file_name, sep='\t')
+        #np.savetxt(loss_file, df, delimiter='\t')
+        # close file in the end
+        #loss_file.close()
+    
 
 if __name__ == '__main__':
 
@@ -97,8 +179,8 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # hyperparameters
-    batch = 100
-    epochs = 5
+    batch = 132
+    epochs = 10
     latent_dim = 50
     ### 64x64 ###
     # here zero padding is needed
@@ -112,11 +194,14 @@ if __name__ == '__main__':
     # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
     #decoder_params = [128*5*5, (128, 64, 5, 2, 2, 1), (64, 32, 5, 2, 2, 1), (32, 3, 5, 2, 2, 1)]
 
-    lr = 1e-4
+    #lr = 1e-3
+
+    lr = [.5e-2, .2e-2, 1e-3, .9e-4, .5e-3]
 
     # set up Model
-    model = VAE(latent_dim, encoder_params, decoder_params)
-    model = model.to(device)
-    optimizer= optim.Adam(model.parameters(), lr=lr)
+    #model = VAE(latent_dim, encoder_params, decoder_params)
+    #model = model.to(device)
+    #optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    train(model, epochs, batch, optimizer, nn.MSELoss(), './', subset_size=10000, test_split=0.2)
+    #train(model, epochs, batch, optimizer, nn.MSELoss(), './', subset_size=40000, test_split=0.2)
+    hyper_search(20, latent_dim, encoder_params, decoder_params, lr, "./loss/loss_test_30000.csv", subset_size=30000, test_split=0.0)
