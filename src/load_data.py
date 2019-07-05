@@ -7,6 +7,8 @@ from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import os
+from operator import itemgetter
+
 
 # used for exploration and understanding of the structure of the meta data
 def explore_meta(meta_path, print_info=True):
@@ -109,17 +111,28 @@ class FaceDataset(Dataset):
         year = cImageData[2]
         file_name = cImageData[7]
 
+        if self.subset is not None:
+            age = age[self.indices]
+            celeb_id = celeb_id[self.indices]
+            year = year[self.indices]
+            file_name = file_name[self.indices]
+
         return {'age': age, 'celeb_id': celeb_id, 'year': year, 'file_name': file_name}
 
-    def load_data(self, data_dir):
+    def load_data(self, data_dir, SEED=42):
+
         filelist = glob.glob(data_dir+'/*.jpg')
         data = []
 
+        # load just subset
+        if self.subset is not None:
+            filelist = itemgetter(*list(self.indices))(filelist)
+
         # iterate files and append to numpy array
-        print(len(filelist))
         for i, filename in enumerate(tqdm(filelist, desc='Load Data')):
             im = Image.open(filename)
             data.append(np.array(im))
+
         return np.array(data)
     
     def get_name(self, idx, meta):
@@ -128,9 +141,22 @@ class FaceDataset(Dataset):
         # idx must be lowered by one because they are not 0 based
         if idx > 2000:
             raise ValueError('Idx must not exceed 2000')
+
         return cData[0][idx-1][0][0][0]
 
-    def __init__(self, meta_path, data_dir, transform=None):
+    def get_indices(self, data_dir, subset, SEED):
+
+        filelist = glob.glob(data_dir+'/*.jpg')
+        indices = list(range(len(filelist)))
+        # shuffle
+        np.random.seed(SEED)
+        np.random.shuffle(indices)
+            
+        # take first subset values of filelist
+        return indices[:subset]
+
+
+    def __init__(self, meta_path, data_dir, subset=None, transform=None, SEED=42):
         """
         Args:s
             meta_path (string): Path to the .mat file with labels.
@@ -142,6 +168,9 @@ class FaceDataset(Dataset):
         #self.celeb_id = self.load_meta(meta_path)['celeb_id']
         #self.year = self.load_meta(meta_path)['year']
         #self.file_name = self.load_meta(meta_path)['file_name']
+        self.subset = subset
+        if subset is not None:
+            self.indices = self.get_indices(data_dir, subset, SEED=SEED)
         self.transform = transform
         self.data_dir = data_dir
         self.meta_path = meta_path
@@ -163,6 +192,7 @@ class FaceDataset(Dataset):
 
         sample = {'image': im, 'age': age, 'name': name}
         return sample
+
 
 # function to resize images in data set
 def resize_images(data_dir, target_dir, size=(32, 32)):
