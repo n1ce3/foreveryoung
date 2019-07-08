@@ -43,6 +43,8 @@ if __name__ == "__main__":
     if model_path == None:
         model_path = newest('../models/')
 
+    print('Model path: {}'.format(model_path))
+
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/64x64CACD2000'
 

@@ -92,7 +92,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-                }, ('../models/{}-{}.pth').format(epoch, dt))
+                }, ('../models/{}-{}-{}.pth').format(model.name, dt, epoch)))
 
 def test(model, test_loader, loss_fct):
 

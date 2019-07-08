@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 # variational autoencoder
 class VAE(nn.Module):
 
-    def __init__(self, latent_dim, encoder_layer_sizes, decoder_layer_sizes):
+    def __init__(self, latent_dim, encoder_layer_sizes, decoder_layer_sizes, name='standard'):
         """
         Arguments:
             encoder_layer_sizes (list[tupel(int)]): list containing tupels of sizes of the encoder layers,
@@ -19,6 +19,7 @@ class VAE(nn.Module):
 
         self.encoder = Encoder(encoder_layer_sizes, latent_dim)
         self.decoder = Decoder(decoder_layer_sizes, latent_dim)
+        self.name = name
 
     def forward(self, x):
         """
