@@ -17,6 +17,7 @@ from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
 from utils import vae_loss, set_split, k_fold_CV
 import pandas as pd
+from datetime import datetime
 
 # Training of the VAE
 def train(model, epochs, batch, optimizer, loss_fct, path, trafo, subset_size=None, test_split=0.2):
@@ -84,12 +85,13 @@ def train(model, epochs, batch, optimizer, loss_fct, path, trafo, subset_size=No
         print('====> Average Test loss: {:.7f}'.format(test_loss / len(test_loader.dataset)))
 
         # save model
+        dt = datetime.now().replace(microsecond=0)
         torch.save({
                 'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-                }, path+('/vae-{}.pth').format(epoch))
+                }, path+('/{}-{}.pth').format(epoch, dt))
 
 
 def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lr, loss_file_name, trafo, batch=132, subset_size=1000, test_split=0.0):
@@ -114,7 +116,7 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lr, loss
 
         print('Learning rate: ', lr)
 
-        # CV split 
+        # CV split
         cv_train, cv_val = k_fold_CV(train_indices, k=k)
 
         # loss
@@ -168,7 +170,7 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lr, loss
             df[str(lr)] = np.mean(temp_loss, axis=0)
             # save temp_loss to file
             df.to_csv(loss_file_name, sep='\t')
-        
+
 
 if __name__ == '__main__':
 
