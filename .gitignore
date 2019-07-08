@@ -11,6 +11,10 @@ info/
 data/*
 !data/.gitkeep
 
+# do not upload models, but keep folder
+models/*
+!data/.gitkeep
+
 # Python specific
 **/__pycache__/
 src/.ipynb_checkpoints
