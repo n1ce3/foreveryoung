@@ -27,9 +27,9 @@ def train(model, epochs, batch, optimizer, loss_fct, trafo, subset_size=None, te
     data_dir = '../data/64x64CACD2000'
 
     # data sets
-    dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo)
+    dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo, subset=subset_size)
 
-    train_indices, test_indices = set_split(len(dataset), subset=subset_size, test_split=test_split)
+    train_indices, test_indices = set_split(len(dataset), test_split=test_split)
 
     train_sampler = SubsetRandomSampler(train_indices)
     test_sampler = SubsetRandomSampler(test_indices)
@@ -199,8 +199,6 @@ if __name__ == '__main__':
     # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
     #decoder_params = [128*5*5, (128, 64, 5, 2, 2, 1), (64, 32, 5, 2, 2, 1), (32, 3, 5, 2, 2, 1)]
 
-    #lr = 1e-3
-
     # prepare transformation
     PIL = transforms.ToPILImage()
     normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
@@ -209,13 +207,15 @@ if __name__ == '__main__':
     # define transformations
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
-    lr = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
-
+    lr = 1e-3
     # set up Model
     model = VAE(latent_dim, encoder_params, decoder_params)
     model = model.to(device)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    #optimizer= optim.Adam(model.parameters(), lr=lr)
+    #optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    train(model, epochs, batch, optimizer, nn.MSELoss(), trafo, subset_size=40000, test_split=0.2)
-    # hyper_search(3, 5, latent_dim, encoder_params, decoder_params, lr, "./loss/loss_test_30000.csv", trafo, subset_size=1000, test_split=0.2)
+    train(model, epochs, batch, optimizer, nn.MSELoss(), trafo, subset_size=1000, test_split=0.2)
+
+    # Hyperpara search
+    lr_search = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
+    # hyper_search(3, 5, latent_dim, encoder_params, decoder_params, lr_search, "./loss/loss_test_30000.csv", trafo, subset_size=1000, test_split=0.2)
