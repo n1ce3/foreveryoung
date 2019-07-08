@@ -23,7 +23,7 @@ from models import VAE
 
 
 # Implement the loss function for the VAE
-def vae_loss(recon_x, x, mu, log_var, loss_func):
+def vae_loss(recon_x, x, mu, log_var, loss_func, alpha=1.0):
     """
     :param recon_x: reconstruced input
     :param x: input
@@ -33,7 +33,8 @@ def vae_loss(recon_x, x, mu, log_var, loss_func):
     recon_loss = loss_func(recon_x, x)
     kl_loss = torch.mean(0.5 * torch.sum(
         torch.exp(log_var) + mu**2 - 1. - log_var, 1))
-    return recon_loss + kl_loss
+    # print('Pixel Loss: {}, KL-Loss: {}'.format(recon_loss, kl_loss))
+    return alpha*recon_loss + kl_loss
 
  # function to split data into train and test set
 def set_split(size_dataset, test_split=0.2, SEED=42):

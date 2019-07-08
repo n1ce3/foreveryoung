@@ -22,7 +22,7 @@ from models import VAE
 from utils import vae_loss, set_split, k_fold_CV, hyper_search, standard_vae
 
 # Training of the VAE
-def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.2, load=False, lrs=[0.001]):
+def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.2, load=False, lrs=[0.001], alpha=1.0):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -74,7 +74,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
             optimizer.zero_grad()
 
             recon_batch,  mu, log_var = model(x)
-            loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct)
+            loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct, alpha=alpha)
 
             loss.backward()
             train_loss += loss.item()
@@ -96,8 +96,6 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
 
 def test(model, test_loader, loss_fct):
 
-
-
     model.eval()
     test_loss = 0
     for batch_idx, data in enumerate(tqdm(test_loader, desc='Test', leave=False)):
@@ -106,7 +104,7 @@ def test(model, test_loader, loss_fct):
         x = x.to(device)
         recon_batch,  mu, log_var = model(x)
         # get loss
-        loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct)
+        loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct, alpha=alpha)
         test_loss += loss.item()
 
     # always return stuff how u got it :)
@@ -130,6 +128,8 @@ if __name__ == '__main__':
     epochs = 10
     lrs = [5e-4, 4e-4, 3e-4, 2e-4, 1e-4]
     lrs_search = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
+    # alpha determines the contribution of KL-Loss, alpha = 0 means no KL-Loss
+    alpha = 0.1
 
     ### 32x32 ###
     #encoder_params = [(3, 32, 5, 2, 2), (32, 64, 5, 2, 2), (64, 128, 5, 2, 2), 128*5*5]
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # set up Model
     model = standard_vae()
 
-    train(model, epochs, batch, nn.MSELoss(), trafo, test_split=0.2, lrs=lrs)
+    train(model, epochs, batch, nn.MSELoss(), trafo, subset_size=10000, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 

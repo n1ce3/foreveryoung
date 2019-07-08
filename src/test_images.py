@@ -39,7 +39,7 @@ if __name__ == "__main__":
     to_tensor = transforms.ToTensor()
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
-    model_path = '../models/3-2019-07-08 15:18:50.pth'
+    model_path = '../models/9-2019-07-08 17:47:48.pth'
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/64x64CACD2000'
 
