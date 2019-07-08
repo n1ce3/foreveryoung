@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import normal
 import glob
 import os.path
 from operator import itemgetter
@@ -113,13 +114,6 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform):
         plt.imshow(pic)
         plt.show()
 
-def random_sample():
-    return 0
-def reconstruction():
-    return 0
-
-def linear_interpolate():
-    return 0
 
 def plot_loss(loss_file_name):
 
@@ -136,7 +130,45 @@ def plot_loss(loss_file_name):
     plt.plot(loss_array)
     plt.show()
 
-def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lr, loss_file_name, trafo, batch=132, subset_size=1000, test_split=0.0):
+# returns a vae with standard parameters, convenience functions to keep code clean
+def standard_vae():
+    # allow for cuda
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
+    ### 64x64 ###
+    encoder_params = [(3, 32, 4, 2, 1), (32, 64, 4, 2, 1), (64, 128, 4, 2, 1), (128, 256, 4, 2, 1), 256*4*4]
+    decoder_params = [256*4*4, (256, 128, 3, 1, 1), (128, 64, 3, 1, 1), (64, 32, 3, 1, 1), (32, 3, 3, 1, 1)]
+    latent_dim = 100
+
+    # set up Model
+    model = VAE(latent_dim, encoder_params, decoder_params)
+    model = model.to(device)
+    return model
+
+def standard_vae32():
+
+    # allow for cuda
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
+    ### 32x32 ###
+    encoder_params = [(3, 32, 5, 2, 2), (32, 64, 5, 2, 2), (64, 128, 5, 2, 2), 128*5*5]
+    decoder_params = [128*5*5, (128, 64, 5, 2, 2, 1), (64, 32, 5, 2, 2, 1), (32, 3, 5, 2, 2, 1)]
+    latent_dim = 100
+
+    # set up Model
+    model = VAE(latent_dim, encoder_params, decoder_params)
+    model = model.to(device)
+    return model
+
+
+
+def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, loss_file_name, trafo, batch=132, subset_size=1000, test_split=0.0):
 
     # build dataframe
     df = pd.DataFrame.from_dict({})

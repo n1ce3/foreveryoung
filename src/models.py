@@ -53,6 +53,31 @@ class VAE(nn.Module):
 
         return x_sampled
 
+    def interpolate(self, x1, x2, alpha):
+        """
+        Interpolating between two images using VAE
+        Arguments:
+            x1: tensor of dimension (1, 3, input_shape, input_shape)
+            x2: tensor of dimension (3, input_shape, input_shape)
+        Output: interpol_x, means, log_vars
+            interpol_x: reconstruction of interpolation,
+            means: interpolation of output of encoder,
+            log_var: interpolation of output of encoder
+        """
+        means1, log_vars1 = self.encoder(x1)
+        means2, log_vars2 = self.encoder(x2)
+
+        # interpolating with parameter alpha
+        means = (1-alpha)*means1 + alpha*means2
+        log_vars = (1-alpha)*log_vars1 + alpha*log_vars2
+
+        std = torch.exp(.5*log_vars)
+        eps = torch.randn_like(std)
+        z = means + eps*std
+        interpol_x = self.decoder(z)
+
+        return interpol_x, means, log_vars
+
 
 class Encoder(nn.Module):
 
