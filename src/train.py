@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # hyperparameters
     batch = 132
     epochs = 10
-    lrs = [5e-4, 4e-4, 3e-4, 2e-4, 1e-4]
+    lrs = np.logspace(-3, -4, 10)
     lrs_search = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
     # alpha determines the contribution of KL-Loss, alpha = 0 means no KL-Loss
     alpha = 0.1
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # set up Model
     model = standard_vae()
 
-    train(model, epochs, batch, nn.MSELoss(), trafo, subset_size=10000, test_split=0.2, lrs=lrs, alpha=alpha)
+    train(model, epochs, batch, nn.MSELoss(), trafo, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 
