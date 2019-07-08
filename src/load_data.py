@@ -134,7 +134,7 @@ class FaceDataset(Dataset):
             data.append(np.array(im))
 
         return np.array(data)
-    
+
     def get_name(self, idx, meta):
         key1 = 'celebrityData'
         cData = meta[key1][0, 0]
@@ -151,7 +151,7 @@ class FaceDataset(Dataset):
         # shuffle
         np.random.seed(SEED)
         np.random.shuffle(indices)
-            
+
         # take first subset values of filelist
         return indices[:subset]
 
@@ -177,7 +177,7 @@ class FaceDataset(Dataset):
         self.meta = sio.loadmat(meta_path)
         self.data = self.load_data(data_dir)
         self.meta_data = self.load_meta(meta_path)
-        
+
 
     def __len__(self):
         return len(self.meta_data['file_name'])
@@ -205,7 +205,7 @@ def resize_images(data_dir, target_dir, size=(32, 32)):
     filelist = glob.glob(data_dir+'/*.jpg')
     print('Filenames loaded...')
 
-    # create new folder if not existant 
+    # create new folder if not existant
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
         print('New Folder created!')
@@ -217,8 +217,8 @@ def resize_images(data_dir, target_dir, size=(32, 32)):
         im = Image.open(filename)
         # resize
         im.thumbnail(size, Image.ANTIALIAS)
-        
-        # outfile 
+
+        # outfile
         outfile = os.path.basename(filename)
         # save image
         im.save(target_dir+'/'+outfile)
@@ -237,5 +237,4 @@ if __name__ == '__main__':
 
     # test_dataset(meta_path, data_dir)
 
-    # resize_images(data_dir, target_dir_64, size=(64,64))
-
+    resize_images(data_dir, target_dir_64, size=(64,64))
