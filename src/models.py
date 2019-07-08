@@ -1,5 +1,4 @@
 import numpy as np
-
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -74,7 +73,8 @@ class Encoder(nn.Module):
             layer_list.append(nn.Conv2d(*shape))
             # batchnorm requires number of features
             layer_list.append(nn.BatchNorm2d(shape[1]))
-            layer_list.append(nn.ReLU())
+            # layer_list.append(nn.ReLU())
+            layer_list.append(nn.LeakyReLU())
         # store layers
         self.layers = nn.Sequential(*layer_list)
 
@@ -114,7 +114,8 @@ class Decoder(nn.Module):
         self.linear = nn.Linear(latent_dim, kernel_sizes[0])
 
         for shape in kernel_sizes[1:]:
-            layer_list.append(nn.ReLU())
+            # layer_list.append(nn.ReLU())
+            layer_list.append(nn.LeakyReLU())
             layer_list.append(nn.Upsample(scale_factor=2))
             layer_list.append(nn.Conv2d(*shape))
 

@@ -20,7 +20,7 @@ import pandas as pd
 from datetime import datetime
 
 # Training of the VAE
-def train(model, epochs, batch, optimizer, loss_fct, path, trafo, subset_size=None, test_split=0.2):
+def train(model, epochs, batch, optimizer, loss_fct, trafo, subset_size=None, test_split=0.2):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -91,7 +91,7 @@ def train(model, epochs, batch, optimizer, loss_fct, path, trafo, subset_size=No
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-                }, path+('/{}-{}.pth').format(epoch, dt))
+                }, ('../models/{}-{}.pth').format(epoch, dt))
 
 
 def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lr, loss_file_name, trafo, batch=132, subset_size=1000, test_split=0.0):
@@ -212,9 +212,10 @@ if __name__ == '__main__':
     lr = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
 
     # set up Model
-    #model = VAE(latent_dim, encoder_params, decoder_params)
-    #model = model.to(device)
+    model = VAE(latent_dim, encoder_params, decoder_params)
+    model = model.to(device)
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
     #optimizer= optim.Adam(model.parameters(), lr=lr)
 
-    #train(model, epochs, batch, optimizer, nn.MSELoss(), './', trafo, subset_size=40000, test_split=0.2)
-    hyper_search(3, 5, latent_dim, encoder_params, decoder_params, lr, "./loss/loss_test_30000.csv", trafo, subset_size=1000, test_split=0.2)
+    train(model, epochs, batch, optimizer, nn.MSELoss(), trafo, subset_size=40000, test_split=0.2)
+    # hyper_search(3, 5, latent_dim, encoder_params, decoder_params, lr, "./loss/loss_test_30000.csv", trafo, subset_size=1000, test_split=0.2)
