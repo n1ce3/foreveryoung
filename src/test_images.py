@@ -20,7 +20,7 @@ from torchvision import models, transforms
 
 from load_data import FaceDataset
 from models import VAE
-from utils import plot_instances, standard_vae
+from utils import plot_instances, standard_vae, newest
 
 if __name__ == "__main__":
 
@@ -39,7 +39,10 @@ if __name__ == "__main__":
     to_tensor = transforms.ToTensor()
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
-    model_path = '../models/9-2019-07-08 17:47:48.pth'
+    model_path = None
+    if model_path == None:
+        model_path = newest('../models/')
+
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/64x64CACD2000'
 

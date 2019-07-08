@@ -2,6 +2,7 @@ import numpy as np
 from numpy.random import normal
 import glob
 import os.path
+import os
 from operator import itemgetter
 from PIL import Image
 from tqdm import tqdm
@@ -245,6 +246,12 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, los
             df[str(lr)] = np.mean(temp_loss, axis=0)
             # save temp_loss to file
             df.to_csv(loss_file_name, sep='\t')
+
+'Get newest file in folder'
+def newest(path):
+    files = os.listdir(path)
+    paths = [os.path.join(path, basename) for basename in files]
+    return max(paths, key=os.path.getctime)
 
 
 
