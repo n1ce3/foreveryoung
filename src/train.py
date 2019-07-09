@@ -125,7 +125,7 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # hyperparameters
-    batch = 132
+    batch = 64
     epochs = 10
 
     # option to pass lrs array as argument to main
