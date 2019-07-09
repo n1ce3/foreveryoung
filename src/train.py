@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+import sys
 import os.path
 from operator import itemgetter
 from PIL import Image
@@ -92,7 +93,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-                }, ('../models/{}-{}-{}.pth').format(model.name, dt, epoch)))
+                }, ('../models/{}-{}-{}.pth').format(model.name, dt, epoch))
 
 def test(model, test_loader, loss_fct):
 
@@ -126,7 +127,14 @@ if __name__ == '__main__':
     # hyperparameters
     batch = 132
     epochs = 10
-    lrs = np.logspace(-3, -4, 10)
+
+    # option to pass lrs array as argument to main
+    if len(sys.argv) >= 2:
+        print('LR passed')
+        lrs = np.array(sys.argv[1])
+    else:
+        lrs = np.logspace(-3, -4, 10)
+
     lrs_search = [.5e-2, .2e-2, 1e-3, .9e-3, .5e-3]
     # alpha determines the contribution of KL-Loss, alpha = 0 means no KL-Loss
     alpha = 0.1
