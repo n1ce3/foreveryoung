@@ -130,8 +130,11 @@ if __name__ == '__main__':
 
     # option to pass lrs array as argument to main
     if len(sys.argv) >= 2:
-        print('LR passed')
-        lrs = np.array(sys.argv[1])
+        lrs = []
+        for lr in sys.argv[1:]:
+            lrs.append(float(lr))
+        print('Lrs passed: {}'.format(lrs))
+
     else:
         lrs = np.logspace(-3, -4, 10)
 

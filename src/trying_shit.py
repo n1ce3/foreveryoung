@@ -8,4 +8,8 @@ kernel_sizes = [(1, 32, 4, 2), (32, 64, 4, 2)]
 
 # initialize convolutional layers
 layer_list = []
-print(np.logspace(-3, -4, 10))
+print(len(np.logspace(-3, -4, 10)))
+
+a = [0.001]
+print(len(a))
+print(len(np.array(a)))
