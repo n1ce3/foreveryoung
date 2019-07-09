@@ -159,7 +159,7 @@ if __name__ == '__main__':
     #model = standard_vae()
     model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
 
-    train(model, epochs, batch, trafo, subset_size=10000, test_split=0.2, lrs=lrs, alpha=alpha)
+    train(model, epochs, batch, trafo, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 
