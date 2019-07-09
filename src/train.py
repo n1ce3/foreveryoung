@@ -157,7 +157,14 @@ if __name__ == '__main__':
 
     # set up Model
     #model = standard_vae()
+
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
     model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    model.to(device)
 
     train(model, epochs, batch, trafo, test_split=0.2, lrs=lrs, alpha=alpha)
 
