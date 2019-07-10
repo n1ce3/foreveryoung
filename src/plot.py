@@ -20,8 +20,8 @@ from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
 
 from load_data import FaceDataset
-from models import VAE, VanillaVAE
-from utils import random_sample, standard_vae
+from models import VanillaVAE
+from utils import random_sample
 
 
 def plot_loss(loss_file_name):
@@ -75,15 +75,15 @@ def subplot(images, rec_images, save_as=None):
 if __name__ == '__main__':
 
     # plotting with old VAE
-    images, rec_images = random_sample(5)
-    subplot(images, rec_images, save_as='testing_old')
+    #images, rec_images = random_sample(5)
+    #subplot(images, rec_images, save_as='testing_old')
 
     # plotting with Vanillia - delicious
-    model_path = '../models/vanilla-4.pth'
-    data_dir = '../data/64x64CACD2000'
+    model_path = '../models/Vanilla_128_lr5e-4stable-9.pth'
+    data_dir = '../data/128x128CACD2000'
 
-    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
-    random_sample(5, model, model_path, data_dir)
-    images, rec_images = random_sample(5)
-    subplot(images, rec_images, save_as='testing_vanillia')
+    
+    images, rec_images = random_sample(5, model, model_path=model_path, data_dir=data_dir)
+    subplot(images, rec_images, save_as='testing_vanillia_layer5_size64_stableLR_10epochs_test')
