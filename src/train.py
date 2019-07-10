@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     model_path = '../models/Vanilla_128_lr5e-4stable-9.pth'
 
-    train(model, epochs, batch, trafo, subset_size=1000, test_split=0.2, lrs=lrs, alpha=alpha, load=True, model_path=model_path)
+    train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, lrs=lrs, alpha=alpha, load=True, model_path=model_path)
 
     # Hyperparameter search
 
