@@ -24,3 +24,7 @@ file_names =
 matt_damon_young = '34_Matt_Damon_0001.jpg'
 matt_damon_old1 = '42_Matt_Damon_0010.jpg'
 matt_damon_old2 = '42_Matt_Damon_0011.jpg'
+
+daniel_radcliff_young = '15_Daniel_Radcliffe_0001.jpg'
+daniel_radcliff_old1 = '24_Daniel_Radcliffe_0017.jpg'
+daniel_radcliff_old2 = '24_Daniel_Radcliffe_0005.jpg'

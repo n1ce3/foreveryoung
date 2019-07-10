@@ -193,6 +193,19 @@ class VanillaVAE(nn.Module):
 
         return recon_x, means, log_vars
 
+    def sample(self, n=1):
+        """
+        Arguments:
+            n (int): amount of samples (amount of elements in the latent space)
+        Output:
+            x_sampled: n randomly sampled elements of the output distribution
+        """
+        # draw samples p(z)~N(0,1)
+        z = torch.randn((n, self.latent_dim))
+        x_sampled = self.decoder(z)
+
+        return x_sampled
+
     def interpolate(self, x1, x2, n):
         """
         Interpolating between two images using VAE
@@ -220,6 +233,8 @@ class VanillaVAE(nn.Module):
             interpolations.append(self.decoder(z).unsqueeze(0)[0][0])
 
         return interpolations
+
+    def
 
 class VanillaEncoder(nn.Module):
 
