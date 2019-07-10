@@ -79,7 +79,7 @@ class VAE(nn.Module):
             std = torch.exp(.5*log_vars)
             eps = torch.randn_like(std)
             z = means + eps*std
-            interpolations.append(self.decoder(z)).unsqueeze(0))[0][0]
+            interpolations.append(self.decoder(z).unsqueeze(0))[0][0])
 
         return interpolations
 
@@ -217,7 +217,7 @@ class VanillaVAE(nn.Module):
             std = torch.exp(.5*log_vars)
             eps = torch.randn_like(std)
             z = means + eps*std
-            interpolations.append(self.decoder(z)).unsqueeze(0))[0][0]
+            interpolations.append(self.decoder(z).unsqueeze(0))[0][0])
 
         return interpolations
 

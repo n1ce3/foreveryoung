@@ -9,11 +9,12 @@ import glob
 from PIL import Image
 from models import VanillaEncoder
 
-device = 'cpu'
-# model = VanillaEncoder(size=128)
+if torch.cuda.is_available():
+    device = 'cuda'
+else:
+    device = 'cpu'
 
-# summary(model, (3, 128, 128))
+model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='trying_shit')
+model.to(device)
 
-a = np.array([0, 1, 2])
-
-print(a[:2])
+summary(model, (3, 128, 128))
