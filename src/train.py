@@ -42,16 +42,17 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
     test_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=batch, sampler=test_sampler)
 
     epochs_trained = 0
+    optimizer = optim.Adam(model.parameters(), lr=lrs[0])
     if load:
         # check for previous trained models and resume from there if available
         try:
-            previous = glob.glob(model_path)
-            checkpoint = torch.load(previous)
+            #previous = glob.glob(model_path)
+            checkpoint = torch.load(model_path)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             loss = checkpoint['loss']
             epochs_trained = checkpoint['epoch']
-            print('Model loaded!')
+            print('Model loaded')
         except Exception as e:
             print('No model to load')
 
@@ -65,8 +66,6 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
         else:
             lr = lrs[epoch]
         print('Learning rate is: {}'.format(lr))
-
-        optimizer = optim.Adam(model.parameters(), lr=lr)
 
         train_loss = 0
 
@@ -90,14 +89,14 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
 
         # save model
         #dt = datetime.now().replace(microsecond=0)
-        if (epoch+1 == epochs) or ((epoch+1)%10==0):
-            # safe model
-            torch.save({
-                    'epoch': epoch+1,
-                    'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'loss': loss,
-                    }, ('../models/{}-{}.pth').format(model.name, epoch))
+        #if (epoch+1 == epochs) or ((epoch+1)%10==0):
+        # safe model
+        torch.save({
+                'epoch': epoch+1,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': loss,
+                }, ('../models/{}-{}.pth').format(model.name, epoch))
 
 def test(model, test_loader):
 
@@ -130,7 +129,7 @@ if __name__ == '__main__':
 
     # hyperparameters
     batch = 128
-    epochs = 10
+    epochs = 20
 
     # option to pass lrs array as argument to main
     if len(sys.argv) >= 2:
@@ -166,7 +165,7 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='Vanilla_128_lr5e-4stable_cont')
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='Vanilla_128_lr5e-4stable_cont_lr1-4')
     model.to(device)
 
     summary(model, (3, 128, 128))
