@@ -19,11 +19,11 @@ from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
 
 from load_data import FaceDataset
-from models import VAE
-from utils import vae_loss, set_split, k_fold_CV, hyper_search, standard_vae
+from models import VAE, VanillaVAE
+from utils import vae_loss, set_split, k_fold_CV, hyper_search, standard_vae, vae_loss_MSE
 
 # Training of the VAE
-def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.2, load=False, lrs=[0.001], alpha=1.0):
+def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=False, lrs=[0.001], alpha=0.1):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -64,6 +64,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
         else:
             lr = lrs[epoch]
         print('Learning rate is: {}'.format(lr))
+
         optimizer = optim.Adam(model.parameters(), lr=lr)
 
         train_loss = 0
@@ -75,7 +76,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
             optimizer.zero_grad()
 
             recon_batch,  mu, log_var = model(x)
-            loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct, alpha=alpha)
+            loss = vae_loss_MSE(recon_batch,  x, mu, log_var, alpha=alpha)
 
             loss.backward()
             train_loss += loss.item()
@@ -84,7 +85,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
         print('====> Epoch: {} Average loss: {:.7f}'.format(epoch, train_loss / len(train_loader.dataset)))
 
         # test model after each epoch to track progress
-        test(model, test_loader, loss_fct)
+        test(model, test_loader)
 
         # save model
         dt = datetime.now().replace(microsecond=0)
@@ -95,7 +96,7 @@ def train(model, epochs, batch, loss_fct, trafo, subset_size=None, test_split=0.
                 'loss': loss,
                 }, ('../models/{}-{}-{}.pth').format(model.name, dt, epoch))
 
-def test(model, test_loader, loss_fct):
+def test(model, test_loader):
 
     model.eval()
     test_loss = 0
@@ -105,7 +106,7 @@ def test(model, test_loader, loss_fct):
         x = x.to(device)
         recon_batch,  mu, log_var = model(x)
         # get loss
-        loss = vae_loss(recon_batch,  x, mu, log_var, loss_fct, alpha=alpha)
+        loss = vae_loss_MSE(recon_batch,  x, mu, log_var, alpha=alpha)
         test_loss += loss.item()
 
     # always return stuff how u got it :)
@@ -125,7 +126,7 @@ if __name__ == '__main__':
         device = 'cpu'
 
     # hyperparameters
-    batch = 132
+    batch = 128
     epochs = 10
 
     # option to pass lrs array as argument to main
@@ -155,9 +156,17 @@ if __name__ == '__main__':
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
     # set up Model
-    model = standard_vae()
+    #model = standard_vae()
 
-    train(model, epochs, batch, nn.MSELoss(), trafo, test_split=0.2, lrs=lrs, alpha=alpha)
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+
+    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    model.to(device)
+
+    train(model, epochs, batch, trafo, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 

@@ -20,7 +20,7 @@ from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
 
 from load_data import FaceDataset
-from models import VAE
+from models import VAE, VanillaVAE
 
 
 # Implement the loss function for the VAE
@@ -34,8 +34,18 @@ def vae_loss(recon_x, x, mu, log_var, loss_func, alpha=1.0):
     recon_loss = loss_func(recon_x, x)
     kl_loss = torch.mean(0.5 * torch.sum(
         torch.exp(log_var) + mu**2 - 1. - log_var, 1))
-    # print('Pixel Loss: {}, KL-Loss: {}'.format(recon_loss, kl_loss))
+    #print('Pixel Loss: {}, KL-Loss: {}'.format(recon_loss, kl_loss))
     return alpha*recon_loss + kl_loss
+
+def vae_loss_MSE(recon_x, x, mu, log_var, alpha=1.0):
+    recon_loss = torch.mean((recon_x - x)**2)
+    # see Appendix B from VAE paper:
+    # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+    # https://arxiv.org/abs/1312.6114
+    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    kl_loss = -0.5 * torch.mean(torch.mean(1 + log_var - mu.pow(2) - log_var.exp(), 1))
+    #print('Pixel Loss: {}, KL-Loss: {}'.format(recon_loss, kl_loss))
+    return recon_loss + kl_loss*alpha
 
  # function to split data into train and test set
 def set_split(size_dataset, test_split=0.2, SEED=42):
@@ -80,7 +90,7 @@ def k_fold_CV(data_indices, k=5):
 
 
 # Implement function to plot random images and their reconstruction
-def plot_instances(n, model, model_path, meta_path, data_dir, transform):
+def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_split=0.2, subset=None):
 
     # restore model
     weights = torch.load(model_path)
@@ -88,9 +98,19 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform):
 
     # load data and sample n random images
     filelist = glob.glob(data_dir+'/*.jpg')
-    _, test_sampler = set_split(40000)
+    size = subset if subset is not None else len(filelist)
+    _, test_sampler = set_split(size, test_split=test_split)
+    
+    test_sampler = np.array(test_sampler)
+    filelist = np.array(filelist)
+
+    # undo seed
+    np.random.seed(seed=None)
+    # shuffel
+    np.random.shuffle(test_sampler)
+
     # choose right files
-    sub_filelist = itemgetter(*list(np.random.choice(test_sampler, n)))(filelist)
+    sub_filelist = filelist[test_sampler[:n]]
 
     samples = []
     # iterate files and append to list
@@ -111,8 +131,6 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform):
         pic = (pic - np.min(pic))
         pic *= 255/np.amax(pic)
         pic = pic.astype(int)
-        print(np.amin(pic))
-        print(np.amax(pic))
         plt.imshow(pic)
         plt.show()
 
@@ -167,8 +185,6 @@ def standard_vae32():
     model = VAE(latent_dim, encoder_params, decoder_params)
     model = model.to(device)
     return model
-
-
 
 def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, loss_file_name, trafo, batch=132, subset_size=1000, test_split=0.0):
 
@@ -267,17 +283,10 @@ if __name__ == "__main__":
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
     # plot
-    model_path = './vae-9.pth'
+    model_path = '../models/vanilla-4.pth'
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/64x64CACD2000'
-    latent_dim = 100
-    ### 64x64 ###
-    # here zero padding is needed
-    encoder_params = [(3, 32, 4, 2, 1), (32, 64, 4, 2, 1), (64, 128, 4, 2, 1), (128, 256, 4, 2, 1), 256*4*4]
-    # here zero padding is needed because kernel of seize three needs padding to retain shape after upsampling
-    decoder_params = [256*4*4, (256, 128, 3, 1, 1), (128, 64, 3, 1, 1), (64, 32, 3, 1, 1), (32, 3, 3, 1, 1)]
 
-    # set up Model
-    model = VAE(latent_dim, encoder_params, decoder_params)
+    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
 
-    plot_instances(10, model, model_path, meta_path, data_dir, trafo)
+    plot_instances(10, model, model_path, meta_path, data_dir, trafo, subset=None)
