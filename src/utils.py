@@ -204,28 +204,57 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, los
 
 
 'Get newest file in folder'
-def newest(path):
+def newest(path='../models/'):
     files = os.listdir(path)
     paths = [os.path.join(path, basename) for basename in files]
     return max(paths, key=os.path.getctime)
 
 
-if __name__ == "__main__":
-    # not sure if we need normalize, therefore not used in trafo
+def random_sample(n, model=standard_vae(), model_path=newest(), data_dir='../data/64x64CACD2000', subset=10000, test_split=0.2):
+    """
+    :param x: list of arbitrary length with images as np.array
+    :param recon_x: list of arbitrary length with reconstructed images
+    :param save_as: string, name of plot
+    returns list of images and list of reconstructed images
+    """
+
+    # restore model
+    weights = torch.load(model_path)
+    model.load_state_dict(weights['model_state_dict'])
+
+    meta_path = '../data/celebrity2000_meta.mat'
+
     PIL = transforms.ToPILImage()
     normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-    #grey = transforms.Grayscale(num_output_channels=1)
-    #crop = transforms.CenterCrop(size=32)
     to_tensor = transforms.ToTensor()
+    transform = transforms.Compose([PIL, to_tensor, normalize])
 
-    # define transformations
-    trafo = transforms.Compose([PIL, to_tensor, normalize])
+    # load data and sample n random images
+    filelist = glob.glob(data_dir+'/*.jpg')
+    size = subset if subset is not None else len(filelist)
+    _, test_sampler = set_split(size, test_split=test_split)
 
-    # plot
-    model_path = '../models/vanilla-4.pth'
-    meta_path = '../data/celebrity2000_meta.mat'
-    data_dir = '../data/64x64CACD2000'
+    test_sampler = np.array(test_sampler)
+    filelist = np.array(filelist)
 
-    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    # undo seed
+    np.random.seed(seed=None)
+    # shuffel
+    np.random.shuffle(test_sampler)
 
-    plot_instances(10, model, model_path, meta_path, data_dir, trafo, subset=None)
+    # choose right files
+    sub_filelist = filelist[test_sampler[:n]]
+
+    images = []
+    # iterate files and append to list
+    for i, filename in enumerate(sub_filelist):
+        im = Image.open(filename)
+        images.append(np.array(im))
+
+    rec_images = []
+    # reconstruct images using VAE
+    for i, pic in enumerate(images):
+        reconstructed = model(transform(np.array(pic)).unsqueeze(0))[0][0]
+        rec_images.append(reconstructed.permute(1, 2, 0).detach().numpy())
+
+    return images, rec_images
