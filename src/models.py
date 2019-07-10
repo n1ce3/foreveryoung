@@ -193,6 +193,34 @@ class VanillaVAE(nn.Module):
 
         return recon_x, means, log_vars
 
+    def interpolate(self, x1, x2, n):
+        """
+        Interpolating between two images using VAE
+        Arguments:
+            x1: tensor of dimension (1, 3, input_shape, input_shape)
+            x2: tensor of dimension (3, input_shape, input_shape)
+            n: number of interpolation between x1 and x2
+        Output: interpolations
+            interpolations: list of interpolations between x1 and x2, first
+            value is x1 and last value is x2
+        """
+        means1, log_vars1 = self.encoder(x1)
+        means2, log_vars2 = self.encoder(x2)
+
+        interpolations = []
+
+        # interpolating with parameter alpha
+        for alpha in np.linspace(0, 1, n+2):
+            means = (1-alpha)*means1 + alpha*means2
+            log_vars = (1-alpha)*log_vars1 + alpha*log_vars2
+
+            std = torch.exp(.5*log_vars)
+            eps = torch.randn_like(std)
+            z = means + eps*std
+            interpolations.append(self.decoder(z))
+
+        return interpolations
+
 class VanillaEncoder(nn.Module):
 
     def __init__(self, layer_count=3, in_channels=3, latent_dim=100, size=64):
