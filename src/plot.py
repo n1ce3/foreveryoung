@@ -67,6 +67,22 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_sp
         plt.imshow(pic)
         plt.show()
 
+
+def plot_loss(loss_file_name):
+
+    # load file
+    loss_file = open(loss_file_name, 'w+')
+
+    # read to numpy array
+    loss_array = np.loadtxt(loss_file, delimiter='\t')
+
+    # plot loss
+    plt.figure()
+    plt.xlabel('Epoch')
+    plt.ylabel('Average loss')
+    plt.plot(loss_array)
+    plt.show()
+
 # plots arbitrary number of np.arrays in array x
 def subplot(x, recon_x, save_as=None):
     """
