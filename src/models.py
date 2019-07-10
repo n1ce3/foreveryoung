@@ -268,7 +268,7 @@ class VanillaDecoder(nn.Module):
     def forward(self, z):
         z = z.view(z.shape[0], self.latent_dim)
         out = self.linear(z)
-        out = out.view(-1, self.max_size, 8, 8)
+        out = out.view(-1, self.max_size, 4, 4)
         out = self.leaky_relu(out)
         out = self.layers(out)
         out = nn.Tanh()(out)

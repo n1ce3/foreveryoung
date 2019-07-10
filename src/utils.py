@@ -89,6 +89,67 @@ def k_fold_CV(data_indices, k=5):
     return train_indices, val_indices
 
 
+# Implement function to plot random images and their reconstruction
+def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_split=0.2, subset=None):
+
+    # restore model
+    weights = torch.load(model_path, map_location='cpu')
+    model.load_state_dict(weights['model_state_dict'])
+
+    # load data and sample n random images
+    filelist = glob.glob(data_dir+'/*.jpg')
+    size = subset if subset is not None else len(filelist)
+    _, test_sampler = set_split(size, test_split=test_split)
+    
+    test_sampler = np.array(test_sampler)
+    filelist = np.array(filelist)
+
+    # undo seed
+    np.random.seed(seed=None)
+    # shuffel
+    np.random.shuffle(test_sampler)
+
+    # choose right files
+    sub_filelist = filelist[test_sampler[:n]]
+
+    samples = []
+    # iterate files and append to list
+    for i, filename in enumerate(sub_filelist):
+        im = Image.open(filename)
+        samples.append(np.array(im))
+
+    rec_samples = []
+    # reconstruct images using VAE
+    for i, pic in enumerate(samples):
+        reconstructed = model(transform(np.array(pic)).unsqueeze(0))[0][0]
+        rec_samples.append(reconstructed.permute(1, 2, 0).detach().numpy())
+
+    plt.figure()
+    # plot images
+    for i, pic in enumerate(rec_samples):
+        print('pic: ', i)
+        pic = (pic - np.min(pic))
+        pic *= 255/np.amax(pic)
+        pic = pic.astype(int)
+        plt.imshow(pic)
+        plt.show()
+
+
+def plot_loss(loss_file_name):
+
+    # load file
+    loss_file = open(loss_file_name, 'w+')
+
+    # read to numpy array
+    loss_array = np.loadtxt(loss_file, delimiter='\t')
+
+    # plot loss
+    plt.figure()
+    plt.xlabel('Epoch')
+    plt.ylabel('Average loss')
+    plt.plot(loss_array)
+    plt.show()
+
 # returns a vae with standard parameters, convenience functions to keep code clean
 def standard_vae():
     # allow for cuda
@@ -234,27 +295,11 @@ def random_sample(n, model=standard_vae(), model_path=newest(), data_dir='../dat
     size = subset if subset is not None else len(filelist)
     _, test_sampler = set_split(size, test_split=test_split)
 
-    test_sampler = np.array(test_sampler)
-    filelist = np.array(filelist)
+    # plot
+    model_path = '../models/vanilla-9.pth'
+    meta_path = '../data/celebrity2000_meta.mat'
+    data_dir = '../data/128x128CACD2000'
 
-    # undo seed
-    np.random.seed(seed=None)
-    # shuffel
-    np.random.shuffle(test_sampler)
-
-    # choose right files
-    sub_filelist = filelist[test_sampler[:n]]
-
-    images = []
-    # iterate files and append to list
-    for i, filename in enumerate(sub_filelist):
-        im = Image.open(filename)
-        images.append(np.array(im))
-
-    rec_images = []
-    # reconstruct images using VAE
-    for i, pic in enumerate(images):
-        reconstructed = model(transform(np.array(pic)).unsqueeze(0))[0][0]
-        rec_images.append(reconstructed.permute(1, 2, 0).detach().numpy())
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
     return images, rec_images

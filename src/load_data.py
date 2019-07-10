@@ -230,6 +230,7 @@ if __name__ == '__main__':
     data_dir = '../data/CACD2000'
     target_dir_32 = '../data/32x32CACD2000'
     target_dir_64 = '../data/64x64CACD2000'
+    target_dir_128 = '../data/128x128CACD2000'
 
     # explore_meta(meta_path)
 

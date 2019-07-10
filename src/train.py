@@ -89,13 +89,15 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
         test(model, test_loader)
 
         # save model
-        dt = datetime.now().replace(microsecond=0)
-        torch.save({
-                'epoch': epoch+1,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss': loss,
-                }, ('../models/{}-{}.pth').format(model.name, epoch))
+        #dt = datetime.now().replace(microsecond=0)
+        if (epoch+1 == epochs) or ((epoch+1)%10==0):
+            # safe model
+            torch.save({
+                    'epoch': epoch+1,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': loss,
+                    }, ('../models/{}-{}.pth').format(model.name, epoch))
 
 def test(model, test_loader):
 
@@ -164,7 +166,7 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
+    model = VanillaVAE(layer_count=5, in_channels=3, latent_dim=100, size=64, name='Vanilla_128_lr_log_5layer_64')
     model.to(device)
 
     summary(model, (3, 128, 128))
