@@ -21,58 +21,13 @@ from torchvision import models, transforms
 
 from load_data import FaceDataset
 from models import VAE, VanillaVAE
-
-# Implement function to plot random images and their reconstruction
-def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_split=0.2, subset=None):
-
-    # restore model
-    weights = torch.load(model_path)
-    model.load_state_dict(weights['model_state_dict'])
-
-    # load data and sample n random images
-    filelist = glob.glob(data_dir+'/*.jpg')
-    size = subset if subset is not None else len(filelist)
-    _, test_sampler = set_split(size, test_split=test_split)
-
-    test_sampler = np.array(test_sampler)
-    filelist = np.array(filelist)
-
-    # undo seed
-    np.random.seed(seed=None)
-    # shuffel
-    np.random.shuffle(test_sampler)
-
-    # choose right files
-    sub_filelist = filelist[test_sampler[:n]]
-
-    samples = []
-    # iterate files and append to list
-    for i, filename in enumerate(sub_filelist):
-        im = Image.open(filename)
-        samples.append(np.array(im))
-
-    rec_samples = []
-    # reconstruct images using VAE
-    for i, pic in enumerate(samples):
-        reconstructed = model(transform(np.array(pic)).unsqueeze(0))[0][0]
-        rec_samples.append(reconstructed.permute(1, 2, 0).detach().numpy())
-
-    plt.figure()
-    # plot images
-    for i, pic in enumerate(rec_samples):
-        print('pic: ', i)
-        pic = (pic - np.min(pic))
-        pic *= 255/np.amax(pic)
-        pic = pic.astype(int)
-        plt.imshow(pic)
-        plt.show()
+from utils import random_sample, standard_vae
 
 
 def plot_loss(loss_file_name):
 
     # load file
     loss_file = open(loss_file_name, 'w+')
-
     # read to numpy array
     loss_array = np.loadtxt(loss_file, delimiter='\t')
 
@@ -83,29 +38,50 @@ def plot_loss(loss_file_name):
     plt.plot(loss_array)
     plt.show()
 
-# plots arbitrary number of np.arrays in array x
-def subplot(x, recon_x, save_as=None):
+
+# plots arbitrary number images and their reconstruction
+def subplot(images, rec_images, save_as=None):
     """
     :param x: list of arbitrary length with images as np.array
     :param recon_x: list of arbitrary length with reconstructed images
     :param save_as: string, name of plot
     """
 
-    fig, axs = plt.subplots(2, len(x), figsize=(15, 6))
+    fig, axs = plt.subplots(2, len(images), figsize=(15, 6))
     fig.subplots_adjust(wspace=0, hspace=0)
     axs = axs.ravel()
 
 
     axs[0].set_ylabel('Images', rotation=0, size='large')
-    axs[5].set_ylabel('Reconstructed Images' rotation=0, size='large')
+    axs[5].set_ylabel('Reconstructed Images', rotation=0, size='large')
 
-    for i in range(2*len(x)):
+    for i in range(2*len(images)):
         axs[i].axis('off')
-        axs[i].imshow(x[i]) if i < len(x) else axs[i].imshow(recon_x[i])
+        if i < len(images):
+            pic = images[i]
+        else:
+            pic = rec_images[i-len(images)]
+            pic = (pic - np.min(pic))
+            pic *= 255/np.amax(pic)
+            pic = pic.astype(int)
+        axs[i].imshow(pic)
 
     plt.show()
     if save_as is not None:
         plt.savefig('../plots/{}.png'.format(save_as))
 
 if __name__ == '__main__':
-    return 0
+
+    # plotting with old VAE
+    images, rec_images = random_sample(5)
+    subplot(images, rec_images, save_as='testing_old')
+
+    # plotting with Vanillia - delicious
+    model_path = '../models/vanilla-4.pth'
+    data_dir = '../data/64x64CACD2000'
+
+    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+
+    random_sample(5, model, model_path, data_dir)
+    images, rec_images = random_sample(5)
+    subplot(images, rec_images, save_as='testing_vanillia')
