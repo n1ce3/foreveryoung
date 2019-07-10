@@ -93,7 +93,7 @@ def k_fold_CV(data_indices, k=5):
 def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_split=0.2, subset=None):
 
     # restore model
-    weights = torch.load(model_path)
+    weights = torch.load(model_path, map_location='cpu')
     model.load_state_dict(weights['model_state_dict'])
 
     # load data and sample n random images
@@ -283,10 +283,10 @@ if __name__ == "__main__":
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
     # plot
-    model_path = '../models/vanilla-4.pth'
+    model_path = '../models/vanilla-9.pth'
     meta_path = '../data/celebrity2000_meta.mat'
-    data_dir = '../data/64x64CACD2000'
+    data_dir = '../data/128x128CACD2000'
 
-    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
     plot_instances(10, model, model_path, meta_path, data_dir, trafo, subset=None)
