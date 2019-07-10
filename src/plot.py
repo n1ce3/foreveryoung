@@ -70,7 +70,7 @@ def subplot(images, rec_images, save_as=None):
         plt.savefig('../plots/{}.png'.format(save_as))
     plt.show()
 
-# comment 
+# comment
 
 if __name__ == '__main__':
 
