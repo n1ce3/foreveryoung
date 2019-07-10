@@ -48,7 +48,7 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
         try:
             #previous = glob.glob(model_path)
             print(model_path)
-            checkpoint = torch.load(model_path, map_location='gpu')
+            checkpoint = torch.load(model_path, map_location='cpu')
             print('loaded')
             model.load_state_dict(checkpoint['model_state_dict'])
             print('weight init')
