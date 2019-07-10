@@ -210,7 +210,7 @@ def newest(path='../models/'):
     return max(paths, key=os.path.getctime)
 
 
-def random_sample(n, model=standard_vae(), model_path=newest(), data_dir='../data/64x64CACD2000', subset=10000, test_split=0.2):
+def random_sample(n, model, model_path, data_dir='../data/64x64CACD2000', subset=10000, test_split=0.2):
     """
     :param x: list of arbitrary length with images as np.array
     :param recon_x: list of arbitrary length with reconstructed images
@@ -219,7 +219,7 @@ def random_sample(n, model=standard_vae(), model_path=newest(), data_dir='../dat
     """
 
     # restore model
-    weights = torch.load(model_path)
+    weights = torch.load(model_path, map_location='cpu')
     model.load_state_dict(weights['model_state_dict'])
 
     meta_path = '../data/celebrity2000_meta.mat'
