@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     summary(model, (3, 128, 128))
 
-    train(model, epochs, batch, trafo, subset_size=500, test_split=0.2, lrs=lrs, alpha=alpha)
+    train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 
