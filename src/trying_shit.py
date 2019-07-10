@@ -2,7 +2,7 @@ from datetime import datetime
 from numpy.random import normal
 import numpy as np
 import torch
-from models import VAE
+from models import VAE, VanillaVAE
 from torchsummary import summary
 from utils import standard_vae, newest, set_split
 import glob
@@ -18,3 +18,9 @@ model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name=
 model.to(device)
 
 summary(model, (3, 128, 128))
+
+file_names =
+
+matt_damon_young = '34_Matt_Damon_0001.jpg'
+matt_damon_old1 = '42_Matt_Damon_0010.jpg'
+matt_damon_old2 = '42_Matt_Damon_0011.jpg'
