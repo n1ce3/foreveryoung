@@ -17,6 +17,7 @@ from torch.utils.data import SubsetRandomSampler
 from torch.autograd import Variable
 from torch.utils.data.dataset import Dataset
 from torchvision import models, transforms
+from torchsummary import summary
 
 from load_data import FaceDataset
 from models import VAE, VanillaVAE
@@ -27,7 +28,7 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
-    data_dir = '../data/64x64CACD2000'
+    data_dir = '../data/128x128CACD2000'
 
     # data sets
     dataset = FaceDataset(meta_path=meta_path, data_dir=data_dir, transform=trafo, subset=subset_size)
@@ -94,7 +95,7 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-                }, ('../models/{}-{}-{}.pth').format(model.name, dt, epoch))
+                }, ('../models/{}-{}.pth').format(model.name, epoch))
 
 def test(model, test_loader):
 
@@ -163,10 +164,12 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
     model.to(device)
 
-    train(model, epochs, batch, trafo, test_split=0.2, lrs=lrs, alpha=alpha)
+    summary(model, (3, 128, 128))
+
+    train(model, epochs, batch, trafo, subset_size=1000, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 
