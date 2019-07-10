@@ -263,24 +263,37 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, los
             # save temp_loss to file
             df.to_csv(loss_file_name, sep='\t')
 
+
 'Get newest file in folder'
-def newest(path):
+def newest(path='../models/'):
     files = os.listdir(path)
     paths = [os.path.join(path, basename) for basename in files]
     return max(paths, key=os.path.getctime)
 
 
+def random_sample(n, model=standard_vae(), model_path=newest(), data_dir='../data/64x64CACD2000', subset=10000, test_split=0.2):
+    """
+    :param x: list of arbitrary length with images as np.array
+    :param recon_x: list of arbitrary length with reconstructed images
+    :param save_as: string, name of plot
+    returns list of images and list of reconstructed images
+    """
 
-if __name__ == "__main__":
-    # not sure if we need normalize, therefore not used in trafo
+    # restore model
+    weights = torch.load(model_path)
+    model.load_state_dict(weights['model_state_dict'])
+
+    meta_path = '../data/celebrity2000_meta.mat'
+
     PIL = transforms.ToPILImage()
     normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-    #grey = transforms.Grayscale(num_output_channels=1)
-    #crop = transforms.CenterCrop(size=32)
     to_tensor = transforms.ToTensor()
+    transform = transforms.Compose([PIL, to_tensor, normalize])
 
-    # define transformations
-    trafo = transforms.Compose([PIL, to_tensor, normalize])
+    # load data and sample n random images
+    filelist = glob.glob(data_dir+'/*.jpg')
+    size = subset if subset is not None else len(filelist)
+    _, test_sampler = set_split(size, test_split=test_split)
 
     # plot
     model_path = '../models/vanilla-9.pth'
@@ -289,4 +302,4 @@ if __name__ == "__main__":
 
     model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
-    plot_instances(10, model, model_path, meta_path, data_dir, trafo, subset=None)
+    return images, rec_images

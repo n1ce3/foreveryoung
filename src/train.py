@@ -164,12 +164,12 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
+    model = VanillaVAE(layer_count=5, in_channels=3, latent_dim=100, size=128)
     model.to(device)
 
     summary(model, (3, 128, 128))
 
-    train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, lrs=lrs, alpha=alpha)
+    train(model, epochs, batch, trafo, subset_size=1000, test_split=0.2, lrs=lrs, alpha=alpha)
 
     # Hyperparameter search
 
