@@ -48,8 +48,11 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
         try:
             #previous = glob.glob(model_path)
             checkpoint = torch.load(model_path, map_location='cpu')
+            print('loaded')
             model.load_state_dict(checkpoint['model_state_dict'])
+            print('weight init')
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print('optimizer init')
             loss = checkpoint['loss']
             epochs_trained = checkpoint['epoch']
             print('Model')
