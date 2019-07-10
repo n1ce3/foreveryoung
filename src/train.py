@@ -47,11 +47,12 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
         # check for previous trained models and resume from there if available
         try:
             #previous = glob.glob(model_path)
-            checkpoint = torch.load(model_path, map_location='cpu')
+            checkpoint = torch.load(model_path)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             loss = checkpoint['loss']
             epochs_trained = checkpoint['epoch']
+            print('Model loaded')
         except Exception as e:
             print('No model to load')
 
