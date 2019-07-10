@@ -66,9 +66,9 @@ def subplot(images, rec_images, save_as=None):
             pic = pic.astype(int)
         axs[i].imshow(pic)
 
-    plt.show()
     if save_as is not None:
         plt.savefig('../plots/{}.png'.format(save_as))
+    plt.show()
 
 if __name__ == '__main__':
 
