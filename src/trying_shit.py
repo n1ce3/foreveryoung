@@ -13,3 +13,5 @@ device = 'cpu'
 model = VanillaEncoder(size=128)
 
 summary(model, (3, 128, 128))
+
+print(np.linspace(0, 1, 10))
