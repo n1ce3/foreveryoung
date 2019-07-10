@@ -202,10 +202,6 @@ def hyper_search(k, epochs, latent_dim, encoder_params, decoder_params, lrs, los
             # save temp_loss to file
             df.to_csv(loss_file_name, sep='\t')
 
-def young_old():
-    
-    return x1, x2
-
 
 # 'Get newest file in folder'
 def newest(path='../models/'):
@@ -213,8 +209,72 @@ def newest(path='../models/'):
     paths = [os.path.join(path, basename) for basename in files]
     return max(paths, key=os.path.getctime)
 
+# interpolates between two random images
+def random_interpolate(n, model, model_path, subset=10000, test_split=0.2):
+    """
+    returns list of interpolations
+    """
+    # restore model
+    weights = torch.load(model_path, map_location='cpu')
+    model.load_state_dict(weights['model_state_dict'])
 
-def random_sample(n, model, model_path, data_dir='../data/64x64CACD2000', subset=10000, test_split=0.2):
+    meta_path = '../data/celebrity2000_meta.mat'
+    data_dir='../data/128x128CACD2000'
+
+    PIL = transforms.ToPILImage()
+    normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    to_tensor = transforms.ToTensor()
+    transform = transforms.Compose([PIL, to_tensor, normalize])
+
+    # load data and sample n random images
+    filelist = glob.glob(data_dir+'/*.jpg')
+    size = subset if subset is not None else len(filelist)
+    _, test_sampler = set_split(size, test_split=test_split)
+
+    test_sampler = np.array(test_sampler)
+    filelist = np.array(filelist)
+
+    # undo seed
+    np.random.seed(seed=None)
+    # shuffel
+    np.random.shuffle(test_sampler)
+
+    # choose right files
+    sub_filelist = filelist[test_sampler[:2]]
+
+    x1 = transform(np.array(Image.open(sub_filelist[0])))
+    x2 = transform(np.array(Image.open(sub_filelist[1])))
+
+    return model.interpolate(x1, x2, n)
+
+# interpolation between images of same celeb at different times
+def age_interpolate(n, model, model_path, celeb_name):
+    """
+    returns list of interpolations
+    """
+    # restore model
+    weights = torch.load(model_path, map_location='cpu')
+    model.load_state_dict(weights['model_state_dict'])
+
+    meta_path = '../data/celebrity2000_meta.mat'
+    data_dir='../data/128x128CACD2000'
+
+    PIL = transforms.ToPILImage()
+    normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    to_tensor = transforms.ToTensor()
+    transform = transforms.Compose([PIL, to_tensor, normalize])
+
+    # Your code here
+    file_name1 = 0
+    file_name2 = 0
+
+    x1 = transform(np.array(Image.open(file_name1)))
+    x2 = transform(np.array(Image.open(file_name2)))
+
+    return model.interpolate(x1, x2, n)
+
+
+def random_sample(n, model, model_path, data_dir='../data/128x128CACD2000', subset=10000, test_split=0.2):
     """
     :param x: list of arbitrary length with images as np.array
     :param recon_x: list of arbitrary length with reconstructed images

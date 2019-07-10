@@ -10,8 +10,10 @@ from PIL import Image
 from models import VanillaEncoder
 
 device = 'cpu'
-model = VanillaEncoder(size=128)
+# model = VanillaEncoder(size=128)
 
-summary(model, (3, 128, 128))
+# summary(model, (3, 128, 128))
 
-print(np.linspace(0, 1, 10))
+a = np.array([0, 1, 2])
+
+print(a[:2])
