@@ -210,7 +210,7 @@ def newest(path='../models/'):
     return max(paths, key=os.path.getctime)
 
 # interpolates between two random images
-def random_interpolate(n, model, model_path, subset=10000, test_split=0.2):
+def random_interpolate(n, model, model_path, subset=None, test_split=0.2):
     """
     returns list of interpolations
     """
@@ -229,7 +229,7 @@ def random_interpolate(n, model, model_path, subset=10000, test_split=0.2):
     # load data and sample n random images
     filelist = glob.glob(data_dir+'/*.jpg')
     size = subset if subset is not None else len(filelist)
-    _, test_sampler = set_split(size, test_split=test_split)
+    test_sampler, _ = set_split(size, test_split=test_split)
 
     test_sampler = np.array(test_sampler)
     filelist = np.array(filelist)
@@ -242,10 +242,24 @@ def random_interpolate(n, model, model_path, subset=10000, test_split=0.2):
     # choose right files
     sub_filelist = filelist[test_sampler[:2]]
 
-    x1 = transform(np.array(Image.open(sub_filelist[0])))
-    x2 = transform(np.array(Image.open(sub_filelist[1])))
+    x1 = transform(np.array(Image.open(sub_filelist[0]))).unsqueeze(0)
+    x2 = transform(np.array(Image.open(sub_filelist[1]))).unsqueeze(0)
 
-    return model.interpolate(x1, x2, n)
+    interpolate = model.interpolate(x1, x2, n)
+
+    images = []
+    # append original first image
+    
+    images.append(x1[0].permute(1, 2, 0).detach().numpy())
+
+    # append interpolated
+    for img in interpolate:
+        images.append(img.permute(1, 2, 0).detach().numpy())
+
+    # append original second image
+    images.append(x2[0].permute(1, 2, 0).detach().numpy())
+
+    return images
 
 # interpolation between images of same celeb at different times
 def age_interpolate(n, model, model_path, celeb_name):
@@ -271,10 +285,23 @@ def age_interpolate(n, model, model_path, celeb_name):
     x1 = transform(np.array(Image.open(file_name1)))
     x2 = transform(np.array(Image.open(file_name2)))
 
-    return model.interpolate(x1, x2, n)
+    images = []
+    # append original first image
 
+    interpolate = model.interpolate(x1, x2, n)
+    
+    images.append(x1[0].permute(1, 2, 0).detach().numpy())
 
-def random_sample(n, model, model_path, data_dir='../data/128x128CACD2000', subset=10000, test_split=0.2):
+    # append interpolated
+    for img in interpolate:
+        images.append(img.permute(1, 2, 0).detach().numpy())
+
+    # append original second image
+    images.append(x2[0].permute(1, 2, 0).detach().numpy())
+
+    return images
+
+def random_sample(n, model, model_path, data_dir='../data/128x128CACD2000', subset=None, test_split=0.2):
     """
     :param x: list of arbitrary length with images as np.array
     :param recon_x: list of arbitrary length with reconstructed images
