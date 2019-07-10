@@ -21,7 +21,7 @@ from torchvision import models, transforms
 
 from load_data import FaceDataset
 from models import VanillaVAE
-from utils import random_sample, random_interpolate
+from utils import random_sample, random_interpolate, age_interpolate
 
 
 def plot_loss(loss_file_name):
@@ -110,5 +110,6 @@ if __name__ == '__main__':
     #subplot(images, rec_images, save_as='testing_vanillia_layer5_size64_stableLR_10epochs_test')
 
     # here interpolation is done
-    interpolations = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
-    plot_interpolations(interpolations, save_as='first_interpolation')
+    #interpolations = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
+    interpolations_age = age_interpolate(5, model, model_path)
+    plot_interpolations(interpolations_age, save_as='first_interpolation')
