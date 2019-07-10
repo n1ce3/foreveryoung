@@ -166,7 +166,7 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='Vanilla_128_lr5e-4stable_cont')
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='Vanilla_128_lr5e-4stable_cont_lr1-4')
     model.to(device)
 
     summary(model, (3, 128, 128))
