@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     # hyperparameters
     batch = 128
-    epochs = 10
+    epochs = 20
 
     # option to pass lrs array as argument to main
     if len(sys.argv) >= 2:
