@@ -231,7 +231,7 @@ class VanillaEncoder(nn.Module):
         # latent space output
         means = self.out_mean(out)
         log_vars = self.out_var(out)
-        
+
         return means, log_vars
 
 
@@ -273,4 +273,3 @@ class VanillaDecoder(nn.Module):
         out = self.layers(out)
         out = nn.Tanh()(out)
         return out
-

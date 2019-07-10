@@ -1,15 +1,15 @@
-import torch.nn as nn
 from datetime import datetime
 from numpy.random import normal
 import numpy as np
-layer = nn.Conv2d(1, 32, 2, 2)
+import torch
+from models import VAE
+from torchsummary import summary
+from utils import standard_vae, newest, set_split
+import glob
+from PIL import Image
+from models import VanillaEncoder
 
-kernel_sizes = [(1, 32, 4, 2), (32, 64, 4, 2)]
+device = 'cpu'
+model = VanillaEncoder(size=128)
 
-# initialize convolutional layers
-layer_list = []
-print(len(np.logspace(-3, -4, 10)))
-
-a = [0.001]
-print(len(a))
-print(len(np.array(a)))
+summary(model, (3, 128, 128))

@@ -70,6 +70,8 @@ def subplot(images, rec_images, save_as=None):
         plt.savefig('../plots/{}.png'.format(save_as))
     plt.show()
 
+# comment 
+
 if __name__ == '__main__':
 
     # plotting with old VAE
