@@ -24,7 +24,7 @@ from models import VAE, VanillaVAE
 from utils import vae_loss, set_split, k_fold_CV, hyper_search, standard_vae, vae_loss_MSE
 
 # Training of the VAE
-def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=False, lrs=[0.001], alpha=0.1):
+def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=False, model_path=None, lrs=[0.001], alpha=0.1):
 
     # set pathes to data
     meta_path = '../data/celebrity2000_meta.mat'
@@ -45,13 +45,13 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
     if load:
         # check for previous trained models and resume from there if available
         try:
-            previous = max(glob.glob('../models/*.pth'))
-            print('Load previous model')
+            previous = glob.glob(model_path)
             checkpoint = torch.load(previous)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             loss = checkpoint['loss']
             epochs_trained = checkpoint['epoch']
+            print('Model loaded!')
         except Exception as e:
             print('No model to load')
 
@@ -166,12 +166,14 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
 
-    model = VanillaVAE(layer_count=5, in_channels=3, latent_dim=100, size=64, name='Vanilla_128_lr_log_5layer_64')
+    model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128, name='Vanilla_128_lr5e-4stable_cont')
     model.to(device)
 
     summary(model, (3, 128, 128))
 
-    train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, lrs=lrs, alpha=alpha)
+    model_path = '../models/Vanilla_128_lr5e-4stable-9.pth'
+
+    train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, lrs=lrs, alpha=alpha, load=True, model_path=model_path)
 
     # Hyperparameter search
 
