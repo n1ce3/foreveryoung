@@ -106,7 +106,6 @@ if __name__ == '__main__':
 
     model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
-
     images, rec_images = random_sample(5, model, model_path=model_path, data_dir=data_dir)
     subplot(images, rec_images, save_as='testing_vanillia_layer5_size64_stableLR_10epochs_test')
 
