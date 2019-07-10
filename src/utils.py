@@ -262,7 +262,7 @@ def random_interpolate(n, model, model_path, subset=None, test_split=0.2):
     return images
 
 # interpolation between images of same celeb at different times
-def age_interpolate(n, model, model_path, celeb_name):
+def age_interpolate(n, model, model_path):
     """
     returns list of interpolations
     """
@@ -279,11 +279,11 @@ def age_interpolate(n, model, model_path, celeb_name):
     transform = transforms.Compose([PIL, to_tensor, normalize])
 
     # Your code here
-    file_name1 = 0
-    file_name2 = 0
+    file_name1 = data_dir +'/'+ '34_Matt_Damon_0001.jpg'
+    file_name2 = data_dir +'/'+ '42_Matt_Damon_0010.jpg'
 
-    x1 = transform(np.array(Image.open(file_name1)))
-    x2 = transform(np.array(Image.open(file_name2)))
+    x1 = transform(np.array(Image.open(file_name1))).unsqueeze(0)
+    x2 = transform(np.array(Image.open(file_name2))).unsqueeze(0)
 
     images = []
     # append original first image
