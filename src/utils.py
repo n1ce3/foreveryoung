@@ -100,8 +100,17 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_sp
     filelist = glob.glob(data_dir+'/*.jpg')
     size = subset if subset is not None else len(filelist)
     _, test_sampler = set_split(size, test_split=test_split)
+    
+    test_sampler = np.array(test_sampler)
+    filelist = np.array(filelist)
+
+    # undo seed
+    np.random.seed(seed=None)
+    # shuffel
+    np.random.shuffle(test_sampler)
+
     # choose right files
-    sub_filelist = itemgetter(*list(np.random.choice(test_sampler, n)))(filelist)
+    sub_filelist = filelist[test_sampler[:n]]
 
     samples = []
     # iterate files and append to list
@@ -122,8 +131,6 @@ def plot_instances(n, model, model_path, meta_path, data_dir, transform, test_sp
         pic = (pic - np.min(pic))
         pic *= 255/np.amax(pic)
         pic = pic.astype(int)
-        print(np.amin(pic))
-        print(np.amax(pic))
         plt.imshow(pic)
         plt.show()
 
@@ -276,10 +283,10 @@ if __name__ == "__main__":
     trafo = transforms.Compose([PIL, to_tensor, normalize])
 
     # plot
-    model_path = '../models/vanilla-0.pth'
+    model_path = '../models/vanilla-4.pth'
     meta_path = '../data/celebrity2000_meta.mat'
     data_dir = '../data/64x64CACD2000'
 
     model = VanillaVAE(layer_count=3, in_channels=3, latent_dim=100, size=128)
 
-    plot_instances(10, model, model_path, meta_path, data_dir, trafo)
+    plot_instances(10, model, model_path, meta_path, data_dir, trafo, subset=None)
