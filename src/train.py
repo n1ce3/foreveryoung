@@ -52,7 +52,7 @@ def train(model, epochs, batch, trafo, subset_size=None, test_split=0.2, load=Fa
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             loss = checkpoint['loss']
             epochs_trained = checkpoint['epoch']
-            print('Model loaded')
+            print('Model')
         except Exception as e:
             print('No model to load')
 
