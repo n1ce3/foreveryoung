@@ -262,7 +262,7 @@ def random_interpolate(n, model, model_path, subset=None, test_split=0.2):
     return images
 
 # interpolation between images of same celeb at different times
-def age_interpolate(n, model, model_path):
+def age_interpolate(n, model, model_path, file_name1, file_name2):
     """
     returns list of interpolations
     """
@@ -279,8 +279,8 @@ def age_interpolate(n, model, model_path):
     transform = transforms.Compose([PIL, to_tensor, normalize])
 
     # Your code here
-    file_name1 = data_dir +'/'+ '34_Matt_Damon_0001.jpg'
-    file_name2 = data_dir +'/'+ '42_Matt_Damon_0010.jpg'
+    file_name1 = data_dir +'/'+ file_name1
+    file_name2 = data_dir +'/'+ file_name2
 
     x1 = transform(np.array(Image.open(file_name1))).unsqueeze(0)
     x2 = transform(np.array(Image.open(file_name2))).unsqueeze(0)
@@ -300,6 +300,23 @@ def age_interpolate(n, model, model_path):
     images.append(x2[0].permute(1, 2, 0).detach().numpy())
 
     return images
+
+def sample_instances(n, model, model_path):
+
+    # restore model
+    weights = torch.load(model_path, map_location='cpu')
+    model.load_state_dict(weights['model_state_dict'])
+
+    samples = model.sample(n)
+
+    images = []
+
+    for img in samples:
+        images.append(img.permute(1, 2, 0).detach().numpy())
+
+    return images
+
+    
 
 def random_sample(n, model, model_path, data_dir='../data/128x128CACD2000', subset=None, test_split=0.2):
     """
