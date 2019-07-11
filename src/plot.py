@@ -21,7 +21,7 @@ from torchvision import models, transforms
 
 from load_data import FaceDataset
 from models import VanillaVAE
-from utils import random_sample, random_interpolate, age_interpolate
+from utils import random_sample, random_interpolate, age_interpolate, sample_instances
 
 
 def plot_loss(loss_file_name):
@@ -70,6 +70,8 @@ def subplot(images, rec_images, save_as=None):
         plt.savefig('../plots/{}.png'.format(save_as))
     plt.show()
 
+
+
 # plots arbitrary number images and their reconstruction
 def plot_interpolations(interpolations, save_as=None):
     """
@@ -93,6 +95,28 @@ def plot_interpolations(interpolations, save_as=None):
         plt.savefig('../plots/{}.png'.format(save_as))
     plt.show()
 
+def plot_samples(samples, save_as):
+
+    fig, axs = plt.subplots(len(samples), len(samples[0]), figsize=(15, 3.2))
+    fig.subplots_adjust(wspace=0, hspace=0)
+    axs = axs.ravel()
+    
+
+    samples_flat = [item for sublist in samples for item in sublist]
+
+    for i in range(len(samples)*len(samples[0])):
+        axs[i].axis('off')
+        pic = samples_flat[i]
+        pic = (pic - np.min(pic))
+        pic *= 255/np.amax(pic)
+        pic = pic.astype(int)
+        axs[i].imshow(pic)
+
+    if save_as is not None:
+        plt.savefig('../plots/{}.png'.format(save_as),bbox_inches='tight', transparent="True", pad_inches=0)
+    plt.show()
+
+
 
 if __name__ == '__main__':
 
@@ -101,15 +125,31 @@ if __name__ == '__main__':
     #subplot(images, rec_images, save_as='testing_old')
 
     # plotting with Vanillia - delicious
-    model_path = '../models/Vanilla_128_lr5e-4stable-9.pth'
+    model_path = '../models/Vanilla_128_lr5e-4stable_cont_lr1-4-19.pth'
     data_dir = '../data/128x128CACD2000'
 
     model = VanillaVAE(layer_count=4, in_channels=3, latent_dim=100, size=128)
 
     #images, rec_images = random_sample(5, model, model_path=model_path, data_dir=data_dir)
-    #subplot(images, rec_images, save_as='testing_vanillia_layer5_size64_stableLR_10epochs_test')
+    #subplot(images, rec_images, save_as='testing_vanillia_layer4_size64_stableLR_20epochs_final')
 
     # here interpolation is done
-    #interpolations = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
-    interpolations_age = age_interpolate(5, model, model_path)
-    plot_interpolations(interpolations_age, save_as='first_interpolation')
+    interpolations1 = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
+    interpolations2 = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
+
+    # here interpolation between age is done
+    file1 = '14_Emma_Watson_0008.jpg'
+    file2 = '23_Emma_Watson_0016.jpg'
+    file3 = '46_Michelle_Pfeiffer_0008.jpg'
+    file4 = '55_Michelle_Pfeiffer_0016.jpg'
+    interpolations_age1 = age_interpolate(5, model, model_path, file1, file2)
+    interpolations_age2 = age_interpolate(5, model, model_path, file3, file4)
+
+    # here generation is done
+    #samples1 = sample_instances(5, model, model_path)
+    #samples2 = sample_instances(5, model, model_path)
+
+    #plot_interpolations(interpolations, save_as='random_interpolation_final')
+
+    #plot_interpolations(interpolations_age, save_as='first_interpolation')
+    plot_samples([interpolations_age1, interpolations_age2], save_as='random_interpolation_age_final_fem')
