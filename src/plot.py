@@ -138,10 +138,10 @@ if __name__ == '__main__':
     interpolations2 = random_interpolate(5, model, model_path, subset=None, test_split=0.2)
 
     # here interpolation between age is done
-    file1 = '14_Emma_Watson_0008.jpg'
-    file2 = '23_Emma_Watson_0016.jpg'
-    file3 = '46_Michelle_Pfeiffer_0008.jpg'
-    file4 = '55_Michelle_Pfeiffer_0016.jpg'
+    file1 = 'm_Matt_Damon_0001.jpg'
+    file2 = '42_Matt_Damon_0010.jpg'
+    file3 = '15_Daniel_Radcliffe_0001.jpg'
+    file4 = '24_Daniel_Radcliffe_0005.jpg'
     interpolations_age1 = age_interpolate(5, model, model_path, file1, file2)
     interpolations_age2 = age_interpolate(5, model, model_path, file3, file4)
 
