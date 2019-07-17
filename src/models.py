@@ -201,7 +201,7 @@ class VanillaVAE(nn.Module):
             x_sampled: n randomly sampled elements of the output distribution
         """
         # draw samples p(z)~N(0,1)
-        z = torch.randn((n, self.latent_dim))
+        z = torch.randn(4*n, self.latent_dim).view(-1, self.latent_dim, 1, 1)
         x_sampled = self.decoder(z)
 
         return x_sampled
@@ -234,7 +234,6 @@ class VanillaVAE(nn.Module):
 
         return interpolations
 
-    def
 
 class VanillaEncoder(nn.Module):
 
